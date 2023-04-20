@@ -5,6 +5,17 @@
 
 #include <list>
 
+struct stateN0{
+  ubicacion jugador;
+  ubicacion sonambulo;
+
+  bool operator== (const stateN0 &x) const{
+    if (jugador == x.jugador && sonambulo.f == x.sonambulo.f && sonambulo.c == x.sonambulo.c)
+      return true;
+    else
+      return false;
+  }
+};
 
 class ComportamientoJugador : public Comportamiento {
   public:
@@ -13,6 +24,7 @@ class ComportamientoJugador : public Comportamiento {
     }
     ComportamientoJugador(std::vector< std::vector< unsigned char> > mapaR) : Comportamiento(mapaR) {
       // Inicializar Variables de Estado
+      hayPlan = false;
     }
     ComportamientoJugador(const ComportamientoJugador & comport) : Comportamiento(comport){}
     ~ComportamientoJugador(){}
@@ -23,8 +35,8 @@ class ComportamientoJugador : public Comportamiento {
 
   private:
     // Declarar Variables de Estado
-
-
+    list<Action> plan;
+    bool hayPlan;
 
 
 
