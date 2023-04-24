@@ -17,6 +17,26 @@ struct stateN0{
   }
 };
 
+struct nodeN0{
+  stateN0 st;
+  list<Action> secuencia;
+
+  bool operator== (const nodeN0 &n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodeN0 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+     return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else
+      return false;
+  }
+};
+
 class ComportamientoJugador : public Comportamiento {
   public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {
@@ -31,13 +51,15 @@ class ComportamientoJugador : public Comportamiento {
 
     Action think(Sensores sensores);
     int interact(Action accion, int valor);
+    void VisualizaPlan(const stateN0 &st, const list<Action> &plan);
 
 
   private:
     // Declarar Variables de Estado
     list<Action> plan;
     bool hayPlan;
-
+    stateN0 c_state;
+    ubicacion goal;
 
 
 };
