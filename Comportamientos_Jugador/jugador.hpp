@@ -37,6 +37,26 @@ struct nodeN0{
   }
 };
 
+struct nodeN1{
+  stateN0 st;
+  list<Action> secuencia;
+
+  bool operator== (const nodeN0 &n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodeN1 &n) const{
+    if (st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
+     return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+  }
+};
+
 class ComportamientoJugador : public Comportamiento {
   public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {

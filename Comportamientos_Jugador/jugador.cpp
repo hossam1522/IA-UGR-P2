@@ -5,7 +5,10 @@
 #include <cmath>
 #include <set>
 #include <stack>
+#include <cmath>
 
+
+/* ..................................Declaración nivel 0................................................ */
 bool AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 list<Action> AnchuraSoloJugador_V2(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 list<Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
@@ -15,6 +18,22 @@ stateN0 apply(const Action &a, const stateN0 &st, const vector<vector<unsigned c
 bool Find(const stateN0 &item, const list<stateN0> &lista);
 bool Find(const stateN0 &item, const list<nodeN0> &lista);
 void AnularMatriz(vector<vector<unsigned char>> &matriz);
+
+/* ..................................Declaración nivel 1................................................ */
+list<Action> AnchuraSonambulo(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
+bool SON_aLaVista(const stateN0 &st);
+list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
+list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
+
+/* ..................................Declaración nivel 2................................................ */
+
+
+/* ..................................Declaración nivel 3................................................ */
+
+
+/* ..................................Declaración nivel 4................................................ */
+
+
 
 // Este es el método principal que se piden en la practica.
 // Tiene como entrada la información de los sensores y devuelve la acción a realizar.
@@ -41,7 +60,9 @@ Action ComportamientoJugador::think(Sensores sensores)
 					plan = AnchuraSoloJugador_V3(c_state, goal, mapaResultado);
 					break;
 				case 1:
-					cout << "Nivel 1 no implementado" << endl;
+					plan = AnchuraAmbos(c_state, goal, mapaResultado);
+					//plan = AnchuraSonambulo(c_state, goal, mapaResultado);
+					//plan = AnchuraJugadorN1(c_state, goal, mapaResultado);
 					break;
 				case 2:
 					cout << "Nivel 2 no implementado" << endl;
@@ -49,6 +70,10 @@ Action ComportamientoJugador::think(Sensores sensores)
 				case 3:
 					cout << "Nivel 3 no implementado" << endl;
 					break;
+			}
+			if (plan.size() > 0){
+				VisualizaPlan(c_state, plan);
+				hayPlan = true;
 			}
 		}
 		if (hayPlan and plan.size()>0){
@@ -69,6 +94,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 	return accion;
 }
 
+/* ..................................Implementación nivel 0................................................ */
 
 int ComportamientoJugador::interact(Action accion, int valor)
 {
@@ -289,6 +315,18 @@ stateN0 apply(const Action &a, const stateN0 &st, const vector<vector<unsigned c
 		case actTURN_R:
 			st_result.jugador.brujula = static_cast<Orientacion>((st.jugador.brujula + 2) % 8);
 			break;
+		case actSON_FORWARD:
+			sig_ubicacion = NextCasilla(st.sonambulo);
+			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c)){
+				st_result.sonambulo = sig_ubicacion;
+			}
+			break;
+		case actSON_TURN_SL:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 7) % 8);
+			break;
+		case actSON_TURN_SR:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 1) % 8);
+			break;
 	}
 	return st_result;
 }
@@ -316,6 +354,257 @@ void AnularMatriz(vector<vector<unsigned char>> &matriz){
 		}
 	}
 }
+
+
+/* ..................................Implementación nivel 1................................................ */
+
+list<Action> AnchuraSonambulo(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN1 current_node;
+	list<nodeN1> frontier;
+	set<nodeN1> explored;
+	list<Action> plan;
+	current_node.st = inicio;
+	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
+	frontier.push_back(current_node);
+
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+
+		// Generar hijo actSON_FORWARD
+		nodeN1 child_forward = current_node;
+		child_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
+		if (child_forward.st.sonambulo.f == final.f && child_forward.st.sonambulo.c == final.c){
+			child_forward.secuencia.push_back(actSON_FORWARD);
+			current_node = child_forward;
+			SolutionFound = true;
+		}
+		else if (explored.find(child_forward) == explored.end()){
+			child_forward.secuencia.push_back(actSON_FORWARD);
+			frontier.push_back(child_forward);
+		}
+
+		if (!SolutionFound){
+			// Generar hijo actSON_TURN_SL
+			nodeN1 child_turnl = current_node;
+			child_turnl.st = apply(actSON_TURN_SL, current_node.st, mapa);
+			if (explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actSON_TURN_SL);
+				frontier.push_back(child_turnl);
+			}
+
+			// Generar hijo actSON_TURN_SR
+			nodeN1 child_turnr = current_node;
+			child_turnr.st = apply(actSON_TURN_SR, current_node.st, mapa);
+			if (explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actSON_TURN_SR);
+				frontier.push_back(child_turnr);
+			}
+		}
+
+		if (!SolutionFound && !frontier.empty()){
+			current_node = frontier.front();
+			while (!frontier.empty() && explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				current_node = frontier.front();
+			}
+		}
+	}
+
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+
+	return plan;
+}
+
+bool SON_aLaVista(const stateN0 &st){
+	bool aLaVista = true;
+	ubicacion pos = st.jugador;
+
+	switch (pos.brujula){
+		case norte:
+			if (pos.f - st.sonambulo.f > 3 or pos.f - st.sonambulo.f < 0 or abs(pos.c - st.sonambulo.c) > 3 )
+				aLaVista = false;
+			else if (pos.f - st.sonambulo.f == 0 && abs(st.sonambulo.c - pos.c) > 0)
+				aLaVista = false;
+			else if (pos.f - st.sonambulo.f == 1 && abs(st.sonambulo.c - pos.c) > 1)
+				aLaVista = false;
+			else if (pos.f - st.sonambulo.f == 2 && abs(st.sonambulo.c - pos.c) > 2)
+				aLaVista = false;
+			break;
+		case noreste:
+			if (pos.f - st.sonambulo.f > 3 || st.sonambulo.c - pos.c > 3 or pos.f - st.sonambulo.f < 0 || st.sonambulo.c - pos.c<  0)
+				aLaVista = false;
+			break;
+		case este:
+			if (st.sonambulo.c - pos.c > 3 || st.sonambulo.c - pos.c < 0 or abs(st.sonambulo.f - pos.f) > 3)
+				aLaVista = false;
+			else if (st.sonambulo.c - pos.c == 0 && abs(st.sonambulo.f - pos.f) > 0)
+				aLaVista = false;
+			else if (st.sonambulo.c - pos.c == 1 && abs(st.sonambulo.f - pos.f) > 1)
+				aLaVista = false;
+			else if (st.sonambulo.c - pos.c == 2 && abs(st.sonambulo.f - pos.f) > 2)
+				aLaVista = false;
+			break;
+		case sureste:
+			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or st.sonambulo.c - pos.c > 3 || st.sonambulo.c - pos.c < 0)
+				aLaVista = false;
+			break;
+		case sur:
+			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or abs(st.sonambulo.c - pos.c) > 3)
+				aLaVista = false;
+			else if (st.sonambulo.f - pos.f == 0 && abs(st.sonambulo.c - pos.c) > 0)
+				aLaVista = false;
+			else if (st.sonambulo.f - pos.f == 1 && abs(st.sonambulo.c - pos.c) > 1)
+				aLaVista = false;
+			else if (st.sonambulo.f - pos.f == 2 && abs(st.sonambulo.c - pos.c) > 2)
+				aLaVista = false;
+			break;
+		case suroeste:
+			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0)
+				aLaVista = false;
+			break;
+		case oeste:
+			if (pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0 or abs(st.sonambulo.f - pos.f) > 3)
+				aLaVista = false;
+			else if (pos.c - st.sonambulo.c == 0 && abs(st.sonambulo.f - pos.f) > 0)
+				aLaVista = false;
+			else if (pos.c - st.sonambulo.c == 1 && abs(st.sonambulo.f - pos.f) > 1)
+				aLaVista = false;
+			else if (pos.c - st.sonambulo.c == 2 && abs(st.sonambulo.f - pos.f) > 2)
+				aLaVista = false;
+			break;
+		case noroeste:
+			if (pos.f - st.sonambulo.f > 3 || pos.f - st.sonambulo.f < 0 or pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0)
+				aLaVista = false;
+			break;
+		default:
+			break;
+	}
+
+	return aLaVista;
+}
+
+list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN0 current_node;
+	list<nodeN0> frontier;
+	set<nodeN0> explored;
+	list<Action> plan;
+	current_node.st = inicio;
+	bool SolutionFound = (SON_aLaVista(current_node.st));
+	frontier.push_back(current_node);
+
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+
+		// Generar hijo actFORWARD
+		nodeN0 child_forward = current_node;
+		child_forward.st = apply(actFORWARD, current_node.st, mapa);
+		if (SON_aLaVista(child_forward.st)){
+			child_forward.secuencia.push_back(actFORWARD);
+			current_node = child_forward;
+			SolutionFound = true;
+		}
+		else if (explored.find(child_forward) == explored.end()){
+			child_forward.secuencia.push_back(actFORWARD);
+			frontier.push_back(child_forward);
+		}
+
+		if (!SolutionFound){
+			// Generar hijo actTURN_L
+			nodeN0 child_turnl = current_node;
+			child_turnl.st = apply(actTURN_L, current_node.st, mapa);
+			if (explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push_back(child_turnl);
+			}
+
+			// Generar hijo actTURN_R
+			nodeN0 child_turnr = current_node;
+			child_turnr.st = apply(actTURN_L, current_node.st, mapa);
+			if (explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actTURN_R);
+				frontier.push_back(child_turnr);
+			}
+		}
+
+		if (!SolutionFound && !frontier.empty()){
+			current_node = frontier.front();
+			while (!frontier.empty() && explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				current_node = frontier.front();
+			}
+		}
+	}
+
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+
+	return plan;
+}
+
+list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN0 current_node;
+	nodeN1 current_node_SON;
+	list<nodeN0> frontier_jug;
+	set<nodeN0> explored_jug;
+	list<nodeN1> frontier_SON;
+	set<nodeN1> explored_SON;
+	list<Action> plan;
+	list<Action> a_Devolver;
+	current_node.st = inicio;
+	current_node_SON.st = inicio;
+	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
+	bool campoVision = SON_aLaVista(current_node.st);
+	frontier_SON.push_back(current_node_SON);
+
+	current_node_SON.secuencia = AnchuraSonambulo(current_node_SON.st, final, mapa);
+
+	while (current_node_SON.secuencia.size() > 0){
+
+		//if (!campoVision){
+			current_node.secuencia.clear();
+			current_node.secuencia = AnchuraJugadorN1(current_node.st, final, mapa);
+
+			while(current_node.secuencia.size()>0){
+				a_Devolver.push_back(current_node.secuencia.front());
+				current_node.secuencia.pop_front();
+			}
+
+		//}
+
+
+		/* a_Devolver.push_back(current_node_SON.secuencia.front());
+		current_node_SON.secuencia.pop_front(); */
+
+	//}
+
+
+		while (current_node_SON.secuencia.size() > 0 ){
+			a_Devolver.push_back(current_node_SON.secuencia.front());
+			current_node_SON.secuencia.pop_front();
+		}
+	}
+
+	plan = a_Devolver;
+
+	return plan;
+}
+
+
+/* ..................................Implementación nivel 2................................................ */
+
+
+/* ..................................Implementación nivel 3................................................ */
+
+
+/* ..................................Implementación nivel 4................................................ */
+
+
+/* ..................................Implementación desde hpp.............................................. */
 
 void ComportamientoJugador::VisualizaPlan(const stateN0 &st, const list<Action> &plan){
 	AnularMatriz(mapaConPlan);
@@ -348,3 +637,5 @@ void ComportamientoJugador::VisualizaPlan(const stateN0 &st, const list<Action> 
 		it++;
 	}
 }
+
+
