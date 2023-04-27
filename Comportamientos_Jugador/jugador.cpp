@@ -234,7 +234,7 @@ list<Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final
 
 			// Generar hijo actTURN_R
 			nodeN0 child_turnr = current_node;
-			child_turnr.st = apply(actTURN_L, current_node.st, mapa);
+			child_turnr.st = apply(actTURN_R, current_node.st, mapa);
 			if (explored.find(child_turnr) == explored.end()){
 				child_turnr.secuencia.push_back(actTURN_R);
 				frontier.push_back(child_turnr);
@@ -245,7 +245,8 @@ list<Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final
 			current_node = frontier.front();
 			while (!frontier.empty() && explored.find(current_node) != explored.end()){
 				frontier.pop_front();
-				current_node = frontier.front();
+				if (!frontier.empty())
+					current_node = frontier.front();
 			}
 		}
 	}
