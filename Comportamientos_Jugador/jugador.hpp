@@ -35,6 +35,17 @@ struct nodeN0{
     else
       return false;
   }
+
+  /* bool operator< (const nodeN1 &n) const{
+    if (st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
+     return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+  } */
 };
 
 struct nodeN1{
@@ -54,6 +65,14 @@ struct nodeN1{
       return true;
     else
       return false;
+   /*  if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+     return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else
+      return false; */
   }
 };
 

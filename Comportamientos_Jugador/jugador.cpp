@@ -420,67 +420,57 @@ list<Action> AnchuraSonambulo(const stateN0 &inicio, const ubicacion &final, con
 }
 
 bool SON_aLaVista(const stateN0 &st){
-	bool aLaVista = true;
+	bool aLaVista = false;
 	ubicacion pos = st.jugador;
 
 	switch (pos.brujula){
 		case norte:
-			if (pos.f - st.sonambulo.f > 3 or pos.f - st.sonambulo.f < 0 or abs(pos.c - st.sonambulo.c) > 3 )
-				aLaVista = false;
-			else if (pos.f - st.sonambulo.f == 0 && abs(st.sonambulo.c - pos.c) > 0)
-				aLaVista = false;
-			else if (pos.f - st.sonambulo.f == 1 && abs(st.sonambulo.c - pos.c) > 1)
-				aLaVista = false;
-			else if (pos.f - st.sonambulo.f == 2 && abs(st.sonambulo.c - pos.c) > 2)
-				aLaVista = false;
+		  if (pos.f - st.sonambulo.f == 1 && abs(st.sonambulo.c - pos.c) <= 1)
+				aLaVista = true;
+			else if (pos.f - st.sonambulo.f == 2 && abs(st.sonambulo.c - pos.c) <= 2)
+				aLaVista = true;
+			else if (pos.f - st.sonambulo.f == 3 && abs(st.sonambulo.c - pos.c) <= 3)
+				aLaVista = true;
 			break;
 		case noreste:
-			if (pos.f - st.sonambulo.f > 3 || st.sonambulo.c - pos.c > 3 or pos.f - st.sonambulo.f < 0 || st.sonambulo.c - pos.c<  0)
-				aLaVista = false;
+			if (pos.f - st.sonambulo.f <=3 && st.sonambulo.c - pos.c <= 3 && pos.f - st.sonambulo.f >= 1 && st.sonambulo.c - pos.c >= 1)
+				aLaVista = true;
 			break;
 		case este:
-			if (st.sonambulo.c - pos.c > 3 || st.sonambulo.c - pos.c < 0 or abs(st.sonambulo.f - pos.f) > 3)
-				aLaVista = false;
-			else if (st.sonambulo.c - pos.c == 0 && abs(st.sonambulo.f - pos.f) > 0)
-				aLaVista = false;
-			else if (st.sonambulo.c - pos.c == 1 && abs(st.sonambulo.f - pos.f) > 1)
-				aLaVista = false;
-			else if (st.sonambulo.c - pos.c == 2 && abs(st.sonambulo.f - pos.f) > 2)
-				aLaVista = false;
+			if (st.sonambulo.c - pos.c == 1 && abs(st.sonambulo.f - pos.f) <= 1)
+				aLaVista = true;
+			else if (st.sonambulo.c - pos.c == 2 && abs(st.sonambulo.f - pos.f) <= 2)
+				aLaVista = true;
+			else if (st.sonambulo.c - pos.c == 3 && abs(st.sonambulo.f - pos.f) <= 3)
+				aLaVista = true;
 			break;
 		case sureste:
-			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or st.sonambulo.c - pos.c > 3 || st.sonambulo.c - pos.c < 0)
-				aLaVista = false;
+			if (st.sonambulo.f - pos.f <= 3 && st.sonambulo.f - pos.f >= 1 && st.sonambulo.c - pos.c <= 3 && st.sonambulo.c - pos.c >= 1)
+				aLaVista = true;
 			break;
 		case sur:
-			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or abs(st.sonambulo.c - pos.c) > 3)
-				aLaVista = false;
-			else if (st.sonambulo.f - pos.f == 0 && abs(st.sonambulo.c - pos.c) > 0)
-				aLaVista = false;
-			else if (st.sonambulo.f - pos.f == 1 && abs(st.sonambulo.c - pos.c) > 1)
-				aLaVista = false;
-			else if (st.sonambulo.f - pos.f == 2 && abs(st.sonambulo.c - pos.c) > 2)
-				aLaVista = false;
+			if (st.sonambulo.f - pos.f == 1 && abs(st.sonambulo.c - pos.c) <= 1)
+				aLaVista = true;
+			else if (st.sonambulo.f - pos.f == 2 && abs(st.sonambulo.c - pos.c) <= 2)
+				aLaVista = true;
+			else if (st.sonambulo.f - pos.f == 3 && abs(st.sonambulo.c - pos.c) <= 3)
+				aLaVista = true;
 			break;
 		case suroeste:
-			if (st.sonambulo.f - pos.f > 3 || st.sonambulo.f - pos.f < 0 or pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0)
-				aLaVista = false;
+			if (st.sonambulo.f - pos.f <= 3 && st.sonambulo.f - pos.f >= 1 && pos.c - st.sonambulo.c <= 3 && pos.c - st.sonambulo.c >= 1)
+				aLaVista = true;
 			break;
 		case oeste:
-			if (pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0 or abs(st.sonambulo.f - pos.f) > 3)
-				aLaVista = false;
-			else if (pos.c - st.sonambulo.c == 0 && abs(st.sonambulo.f - pos.f) > 0)
-				aLaVista = false;
-			else if (pos.c - st.sonambulo.c == 1 && abs(st.sonambulo.f - pos.f) > 1)
-				aLaVista = false;
-			else if (pos.c - st.sonambulo.c == 2 && abs(st.sonambulo.f - pos.f) > 2)
-				aLaVista = false;
+			if (pos.c - st.sonambulo.c == 1 && abs(st.sonambulo.f - pos.f) <=1)
+				aLaVista = true;
+			else if (pos.c - st.sonambulo.c == 2 && abs(st.sonambulo.f - pos.f) <= 2)
+				aLaVista = true;
+			else if (pos.c - st.sonambulo.c == 3 && abs(st.sonambulo.f - pos.f) <= 3)
+				aLaVista = true;
 			break;
 		case noroeste:
-			if (pos.f - st.sonambulo.f > 3 || pos.f - st.sonambulo.f < 0 or pos.c - st.sonambulo.c > 3 || pos.c - st.sonambulo.c < 0)
-				aLaVista = false;
-			break;
-		default:
+			if (pos.f - st.sonambulo.f <= 3 && pos.f - st.sonambulo.f >= 1 && pos.c - st.sonambulo.c <= 3 && pos.c - st.sonambulo.c >= 1)
+				aLaVista = true;
 			break;
 	}
 
@@ -548,49 +538,121 @@ list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, con
 }
 
 list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-	nodeN0 current_node;
-	nodeN1 current_node_SON;
-	list<nodeN0> frontier_jug;
-	set<nodeN0> explored_jug;
-	list<nodeN1> frontier_SON;
-	set<nodeN1> explored_SON;
+	nodeN1 current_node;
+	list<nodeN1> frontier;
+	set<nodeN1> explored;
 	list<Action> plan;
-	list<Action> a_Devolver;
+	/* nodeN0 current_node;
+	list<nodeN0> frontier;
+	set<nodeN0> explored;
+	list<Action> plan; */
 	current_node.st = inicio;
-	current_node_SON.st = inicio;
 	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
-	bool campoVision = SON_aLaVista(current_node.st);
-	frontier_SON.push_back(current_node_SON);
+	frontier.push_back(current_node);
 
-	current_node_SON.secuencia = AnchuraSonambulo(current_node_SON.st, final, mapa);
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
 
-	while (current_node_SON.secuencia.size() > 0){
+		// Generar hijo actFORWARD
+		nodeN1 child_forward = current_node;
+		/* child_forward.st = apply(actFORWARD, current_node.st, mapa);
+		if (SON_aLaVista(child_forward.st)){
+			child_forward.secuencia.push_back(actFORWARD);
+			current_node = child_forward;
+			//SolutionFound = true;
+		}
+		else if (explored.find(child_forward) == explored.end()){
+			child_forward.secuencia.push_back(actFORWARD);
+			frontier.push_back(child_forward);
+		} */
 
-		//if (!campoVision){
-			current_node.secuencia.clear();
-			current_node.secuencia = AnchuraJugadorN1(current_node.st, final, mapa);
-
-			while(current_node.secuencia.size()>0){
-				a_Devolver.push_back(current_node.secuencia.front());
-				current_node.secuencia.pop_front();
+		//if (SON_aLaVista(child_forward.st)){
+			child_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
+			if (child_forward.st.sonambulo.f == final.f && child_forward.st.sonambulo.c == final.c){
+				child_forward.secuencia.push_back(actSON_FORWARD);
+				current_node = child_forward;
+				SolutionFound = true;
 			}
-
-		//}
-
-
-		/* a_Devolver.push_back(current_node_SON.secuencia.front());
-		current_node_SON.secuencia.pop_front(); */
-
-	//}
+			else if (explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actSON_FORWARD);
+				frontier.push_back(child_forward);
+			}
+	//	}
 
 
-		while (current_node_SON.secuencia.size() > 0 ){
-			a_Devolver.push_back(current_node_SON.secuencia.front());
-			current_node_SON.secuencia.pop_front();
+		if (!SolutionFound){
+
+				// Generar hijo actFORWARD
+				nodeN1 child_forward = current_node;
+				child_forward.st = apply(actFORWARD, current_node.st, mapa);
+				if (explored.find(child_forward) == explored.end()){
+					child_forward.secuencia.push_back(actFORWARD);
+					frontier.push_back(child_forward);
+				}
+
+				// Generar hijo actTURN_L
+				nodeN1 child_turnl = current_node;
+				child_turnl.st = apply(actTURN_L, current_node.st, mapa);
+				if (explored.find(child_turnl) == explored.end()){
+					child_turnl.secuencia.push_back(actTURN_L);
+					frontier.push_back(child_turnl);
+				}
+
+				// Generar hijo actTURN_R
+				nodeN1 child_turnr = current_node;
+				child_turnr.st = apply(actTURN_R, current_node.st, mapa);
+				if (explored.find(child_turnr) == explored.end()){
+					child_turnr.secuencia.push_back(actTURN_R);
+					frontier.push_back(child_turnr);
+				}
+
+			//if (SON_aLaVista(current_node.st)){
+
+				// Generar hijo actSON_FORWARD
+				nodeN1 child_SON_forward = current_node;
+				child_SON_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
+				if (explored.find(child_SON_forward) == explored.end()){
+					child_SON_forward.secuencia.push_back(actSON_FORWARD);
+					frontier.push_back(child_SON_forward);
+				}
+
+				// Generar hijo actSON_TURN_SL
+				nodeN1 child_SON_turnsl = current_node;
+				child_SON_turnsl.st = apply(actSON_TURN_SL, current_node.st, mapa);
+				if (explored.find(child_SON_turnsl) == explored.end()){
+					child_SON_turnsl.secuencia.push_back(actSON_TURN_SL);
+					frontier.push_back(child_SON_turnsl);
+				}
+
+				// Generar hijo actSON_TURN_SR
+				nodeN1 child_SON_turnsr = current_node;
+				child_SON_turnsr.st = apply(actSON_TURN_SR, current_node.st, mapa);
+				if (explored.find(child_SON_turnsr) == explored.end()){
+					child_SON_turnsr.secuencia.push_back(actSON_TURN_SR);
+					frontier.push_back(child_SON_turnsr);
+				}
+			//}
+		}
+
+		if (!SolutionFound && !frontier.empty()){
+			current_node = frontier.front();
+			while (!frontier.empty() && explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				if (!frontier.empty())
+					current_node = frontier.front();
+			}
 		}
 	}
 
-	plan = a_Devolver;
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+
+	if (SolutionFound)
+		cout << "Solucion encontrada" << endl;
+	else
+		cout << "Solucion NO encontrada" << endl;
 
 	return plan;
 }
