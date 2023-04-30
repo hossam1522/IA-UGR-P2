@@ -9,9 +9,7 @@
 
 
 /* ..................................Declaración nivel 0................................................ */
-bool AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
-list<Action> AnchuraSoloJugador_V2(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
-list<Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
+list<Action> AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 bool CasillaTransitable(const ubicacion &x, const vector<vector<unsigned char> > &mapa);
 ubicacion NextCasilla(const ubicacion &pos);
 stateN0 apply(const Action &a, const stateN0 &st, const vector<vector<unsigned char> > &mapa);
@@ -20,13 +18,12 @@ bool Find(const stateN0 &item, const list<nodeN0> &lista);
 void AnularMatriz(vector<vector<unsigned char>> &matriz);
 
 /* ..................................Declaración nivel 1................................................ */
-list<Action> AnchuraSonambulo(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 bool SON_aLaVista(const stateN0 &st);
-list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 /* ..................................Declaración nivel 2................................................ */
-
+int coste (const stateN0 &st, const vector<vector<unsigned char> > &mapa);
+list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 /* ..................................Declaración nivel 3................................................ */
 
@@ -57,15 +54,13 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 			switch (sensores.nivel){
 				case 0:
-					plan = AnchuraSoloJugador_V3(c_state, goal, mapaResultado);
+					plan = AnchuraSoloJugador(c_state, goal, mapaResultado);
 					break;
 				case 1:
 					plan = AnchuraAmbos(c_state, goal, mapaResultado);
-					//plan = AnchuraSonambulo(c_state, goal, mapaResultado);
-					//plan = AnchuraJugadorN1(c_state, goal, mapaResultado);
 					break;
 				case 2:
-					cout << "Nivel 2 no implementado" << endl;
+					plan = DijkstraSoloJugador(c_state, goal, mapaResultado);
 					break;
 				case 3:
 					cout << "Nivel 3 no implementado" << endl;
@@ -101,103 +96,7 @@ int ComportamientoJugador::interact(Action accion, int valor)
 	return false;
 }
 
-bool AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-
-	stateN0 current_state = inicio;
-	list<stateN0> frontier;
-	list<stateN0> explored;
-	frontier.push_back(current_state);
-	bool SolutionFound = (current_state.jugador.f == final.f && current_state.jugador.c == final.c);
-
-	while (!frontier.empty() && !SolutionFound){
-		frontier.pop_front();
-		explored.push_back(current_state);
-
-		// Generar hijo actFORWARD
-		stateN0 child_forward = apply(actFORWARD, current_state, mapa);
-		if (child_forward.jugador.f == final.f && child_forward.jugador.c == final.c){
-			current_state = child_forward;
-			SolutionFound = true;
-		}
-		else if (!Find(child_forward, frontier) && !Find(child_forward, explored))
-			frontier.push_back(child_forward);
-
-		if (!SolutionFound){
-			// Generar hijo actTURN_L
-			stateN0 child_turnl = apply(actTURN_L, current_state, mapa);
-			if (!Find(child_turnl, frontier) && !Find(child_turnl, explored))
-				frontier.push_back(child_turnl);
-
-			// Generar hijo actTURN_R
-			stateN0 child_turnr = apply(actTURN_R, current_state, mapa);
-			if (!Find(child_turnr, frontier) && !Find(child_turnr, explored))
-				frontier.push_back(child_turnr);
-		}
-
-		if (!SolutionFound && !frontier.empty())
-			current_state = frontier.front();
-
-	}
-
-	return SolutionFound;
-}
-
-list<Action> AnchuraSoloJugador_V2(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-	nodeN0 current_node;
-	list<nodeN0> frontier;
-	list<nodeN0> explored;
-	list<Action> plan;
-	current_node.st = inicio;
-	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
-	frontier.push_back(current_node);
-
-	while (!frontier.empty() && !SolutionFound){
-		frontier.pop_front();
-		explored.push_back(current_node);
-
-		// Generar hijo actFORWARD
-		nodeN0 child_forward = current_node;
-		child_forward.st = apply(actFORWARD, current_node.st, mapa);
-		if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
-			child_forward.secuencia.push_back(actFORWARD);
-			current_node = child_forward;
-			SolutionFound = true;
-		}
-		else if (!Find(child_forward.st, frontier) && !Find(child_forward.st, explored)){
-			child_forward.secuencia.push_back(actFORWARD);
-			frontier.push_back(child_forward);
-		}
-
-		if (!SolutionFound){
-			// Generar hijo actTURN_L
-			nodeN0 child_turnl = current_node;
-			child_turnl.st = apply(actTURN_L, current_node.st, mapa);
-			if (!Find(child_turnl.st, frontier) && !Find(child_turnl.st, explored)){
-				child_turnl.secuencia.push_back(actTURN_L);
-				frontier.push_back(child_turnl);
-			}
-
-			// Generar hijo actTURN_R
-			nodeN0 child_turnr = current_node;
-			child_turnr.st = apply(actTURN_L, current_node.st, mapa);
-			if (!Find(child_turnr.st, frontier) && !Find(child_turnr.st, explored)){
-				child_turnr.secuencia.push_back(actTURN_R);
-				frontier.push_back(child_turnr);
-			}
-		}
-
-		if (!SolutionFound && !frontier.empty())
-			current_node = frontier.front();
-	}
-
-	if (SolutionFound){
-		plan = current_node.secuencia;
-	}
-
-	return plan;
-}
-
-list<Action> AnchuraSoloJugador_V3(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+list<Action> AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
 	nodeN0 current_node;
 	list<nodeN0> frontier;
 	set<nodeN0> explored;
@@ -359,66 +258,6 @@ void AnularMatriz(vector<vector<unsigned char>> &matriz){
 
 /* ..................................Implementación nivel 1................................................ */
 
-list<Action> AnchuraSonambulo(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-	nodeN1 current_node;
-	list<nodeN1> frontier;
-	set<nodeN1> explored;
-	list<Action> plan;
-	current_node.st = inicio;
-	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
-	frontier.push_back(current_node);
-
-	while (!frontier.empty() && !SolutionFound){
-		frontier.pop_front();
-		explored.insert(current_node);
-
-		// Generar hijo actSON_FORWARD
-		nodeN1 child_forward = current_node;
-		child_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
-		if (child_forward.st.sonambulo.f == final.f && child_forward.st.sonambulo.c == final.c){
-			child_forward.secuencia.push_back(actSON_FORWARD);
-			current_node = child_forward;
-			SolutionFound = true;
-		}
-		else if (explored.find(child_forward) == explored.end()){
-			child_forward.secuencia.push_back(actSON_FORWARD);
-			frontier.push_back(child_forward);
-		}
-
-		if (!SolutionFound){
-			// Generar hijo actSON_TURN_SL
-			nodeN1 child_turnl = current_node;
-			child_turnl.st = apply(actSON_TURN_SL, current_node.st, mapa);
-			if (explored.find(child_turnl) == explored.end()){
-				child_turnl.secuencia.push_back(actSON_TURN_SL);
-				frontier.push_back(child_turnl);
-			}
-
-			// Generar hijo actSON_TURN_SR
-			nodeN1 child_turnr = current_node;
-			child_turnr.st = apply(actSON_TURN_SR, current_node.st, mapa);
-			if (explored.find(child_turnr) == explored.end()){
-				child_turnr.secuencia.push_back(actSON_TURN_SR);
-				frontier.push_back(child_turnr);
-			}
-		}
-
-		if (!SolutionFound && !frontier.empty()){
-			current_node = frontier.front();
-			while (!frontier.empty() && explored.find(current_node) != explored.end()){
-				frontier.pop_front();
-				current_node = frontier.front();
-			}
-		}
-	}
-
-	if (SolutionFound){
-		plan = current_node.secuencia;
-	}
-
-	return plan;
-}
-
 bool SON_aLaVista(const stateN0 &st){
 	bool aLaVista = false;
 	ubicacion pos = st.jugador;
@@ -477,13 +316,120 @@ bool SON_aLaVista(const stateN0 &st){
 	return aLaVista;
 }
 
-list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-	nodeN0 current_node;
-	list<nodeN0> frontier;
-	set<nodeN0> explored;
+list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN1 current_node;
+	list<nodeN1> frontier;
+	set<nodeN1> explored;
 	list<Action> plan;
 	current_node.st = inicio;
-	bool SolutionFound = (SON_aLaVista(current_node.st));
+	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
+	frontier.push_back(current_node);
+
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+
+		if (!SolutionFound){
+
+			if (SON_aLaVista(current_node.st)){
+
+				// Generar hijo actSON_FORWARD
+				nodeN1 child_SON_forward = current_node;
+				child_SON_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
+				if (child_SON_forward.st.sonambulo.f == final.f && child_SON_forward.st.sonambulo.c == final.c){
+					child_SON_forward.secuencia.push_back(actSON_FORWARD);
+					current_node = child_SON_forward;
+					SolutionFound = true;
+				}
+				else if (explored.find(child_SON_forward) == explored.end()){
+					child_SON_forward.secuencia.push_back(actSON_FORWARD);
+					frontier.push_back(child_SON_forward);
+				}
+
+				// Generar hijo actSON_TURN_SL
+				nodeN1 child_SON_turnsl = current_node;
+				child_SON_turnsl.st = apply(actSON_TURN_SL, current_node.st, mapa);
+				if (explored.find(child_SON_turnsl) == explored.end() ){
+					child_SON_turnsl.secuencia.push_back(actSON_TURN_SL);
+					frontier.push_back(child_SON_turnsl);
+				}
+
+				// Generar hijo actSON_TURN_SR
+				nodeN1 child_SON_turnsr = current_node;
+				child_SON_turnsr.st = apply(actSON_TURN_SR, current_node.st, mapa);
+				if (explored.find(child_SON_turnsr) == explored.end() ){
+					child_SON_turnsr.secuencia.push_back(actSON_TURN_SR);
+					frontier.push_back(child_SON_turnsr);
+				}
+
+			} else {
+
+				// Generar hijo actFORWARD
+				nodeN1 child_forward = current_node;
+				child_forward.st = apply(actFORWARD, current_node.st, mapa);
+				if (SON_aLaVista(child_forward.st)){
+					child_forward.secuencia.push_back(actFORWARD);
+					frontier.push_back(child_forward);
+					current_node = child_forward;
+				}
+				else if (explored.find(child_forward) == explored.end()){
+					child_forward.secuencia.push_back(actFORWARD);
+					frontier.push_back(child_forward);
+				}
+
+				// Generar hijo actTURN_L
+				nodeN1 child_turnl = current_node;
+				child_turnl.st = apply(actTURN_L, current_node.st, mapa);
+				if (explored.find(child_turnl) == explored.end() && !SON_aLaVista(current_node.st)){
+					child_turnl.secuencia.push_back(actTURN_L);
+					frontier.push_back(child_turnl);
+				}
+
+				// Generar hijo actTURN_R
+				nodeN1 child_turnr = current_node;
+				child_turnr.st = apply(actTURN_R, current_node.st, mapa);
+				if (explored.find(child_turnr) == explored.end() && !SON_aLaVista(current_node.st) ){
+					child_turnr.secuencia.push_back(actTURN_R);
+					frontier.push_back(child_turnr);
+				}
+
+			}
+		}
+
+		if (!SolutionFound && !frontier.empty()){
+			current_node = frontier.front();
+			while (!frontier.empty() && explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				if (!frontier.empty())
+					current_node = frontier.front();
+			}
+		}
+	}
+
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+	else {
+		cout << "No se ha encontrado solución" << endl;
+	}
+
+	return plan;
+}
+
+
+/* ..................................Implementación nivel 2................................................ */
+
+int coste (const stateN0 &st, const vector<vector<unsigned char> > &mapa){
+
+}
+
+list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN2 current_node;
+	list<nodeN2> frontier;
+	set<nodeN2> explored;
+	list<Action> plan;
+	current_node.st = inicio;
+	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
 	frontier.push_back(current_node);
 
 	while (!frontier.empty() && !SolutionFound){
@@ -491,9 +437,9 @@ list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, con
 		explored.insert(current_node);
 
 		// Generar hijo actFORWARD
-		nodeN0 child_forward = current_node;
+		nodeN2 child_forward = current_node;
 		child_forward.st = apply(actFORWARD, current_node.st, mapa);
-		if (SON_aLaVista(child_forward.st)){
+		if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
 			child_forward.secuencia.push_back(actFORWARD);
 			current_node = child_forward;
 			SolutionFound = true;
@@ -505,7 +451,7 @@ list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, con
 
 		if (!SolutionFound){
 			// Generar hijo actTURN_L
-			nodeN0 child_turnl = current_node;
+			nodeN2 child_turnl = current_node;
 			child_turnl.st = apply(actTURN_L, current_node.st, mapa);
 			if (explored.find(child_turnl) == explored.end()){
 				child_turnl.secuencia.push_back(actTURN_L);
@@ -513,126 +459,12 @@ list<Action> AnchuraJugadorN1(const stateN0 &inicio, const ubicacion &final, con
 			}
 
 			// Generar hijo actTURN_R
-			nodeN0 child_turnr = current_node;
-			child_turnr.st = apply(actTURN_L, current_node.st, mapa);
+			nodeN2 child_turnr = current_node;
+			child_turnr.st = apply(actTURN_R, current_node.st, mapa);
 			if (explored.find(child_turnr) == explored.end()){
 				child_turnr.secuencia.push_back(actTURN_R);
 				frontier.push_back(child_turnr);
 			}
-		}
-
-		if (!SolutionFound && !frontier.empty()){
-			current_node = frontier.front();
-			while (!frontier.empty() && explored.find(current_node) != explored.end()){
-				frontier.pop_front();
-				current_node = frontier.front();
-			}
-		}
-	}
-
-	if (SolutionFound){
-		plan = current_node.secuencia;
-	}
-
-	return plan;
-}
-
-list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
-	nodeN1 current_node;
-	list<nodeN1> frontier;
-	set<nodeN1> explored;
-	list<Action> plan;
-	/* nodeN0 current_node;
-	list<nodeN0> frontier;
-	set<nodeN0> explored;
-	list<Action> plan; */
-	current_node.st = inicio;
-	bool SolutionFound = (current_node.st.sonambulo.f == final.f && current_node.st.sonambulo.c == final.c);
-	frontier.push_back(current_node);
-
-	while (!frontier.empty() && !SolutionFound){
-		frontier.pop_front();
-		explored.insert(current_node);
-
-		// Generar hijo actFORWARD
-		nodeN1 child_forward = current_node;
-		/* child_forward.st = apply(actFORWARD, current_node.st, mapa);
-		if (SON_aLaVista(child_forward.st)){
-			child_forward.secuencia.push_back(actFORWARD);
-			current_node = child_forward;
-			//SolutionFound = true;
-		}
-		else if (explored.find(child_forward) == explored.end()){
-			child_forward.secuencia.push_back(actFORWARD);
-			frontier.push_back(child_forward);
-		} */
-
-		//if (SON_aLaVista(child_forward.st)){
-			child_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
-			if (child_forward.st.sonambulo.f == final.f && child_forward.st.sonambulo.c == final.c){
-				child_forward.secuencia.push_back(actSON_FORWARD);
-				current_node = child_forward;
-				SolutionFound = true;
-			}
-			else if (explored.find(child_forward) == explored.end()){
-				child_forward.secuencia.push_back(actSON_FORWARD);
-				frontier.push_back(child_forward);
-			}
-	//	}
-
-
-		if (!SolutionFound){
-
-				// Generar hijo actFORWARD
-				nodeN1 child_forward = current_node;
-				child_forward.st = apply(actFORWARD, current_node.st, mapa);
-				if (explored.find(child_forward) == explored.end()){
-					child_forward.secuencia.push_back(actFORWARD);
-					frontier.push_back(child_forward);
-				}
-
-				// Generar hijo actTURN_L
-				nodeN1 child_turnl = current_node;
-				child_turnl.st = apply(actTURN_L, current_node.st, mapa);
-				if (explored.find(child_turnl) == explored.end()){
-					child_turnl.secuencia.push_back(actTURN_L);
-					frontier.push_back(child_turnl);
-				}
-
-				// Generar hijo actTURN_R
-				nodeN1 child_turnr = current_node;
-				child_turnr.st = apply(actTURN_R, current_node.st, mapa);
-				if (explored.find(child_turnr) == explored.end()){
-					child_turnr.secuencia.push_back(actTURN_R);
-					frontier.push_back(child_turnr);
-				}
-
-			//if (SON_aLaVista(current_node.st)){
-
-				// Generar hijo actSON_FORWARD
-				nodeN1 child_SON_forward = current_node;
-				child_SON_forward.st = apply(actSON_FORWARD, current_node.st, mapa);
-				if (explored.find(child_SON_forward) == explored.end()){
-					child_SON_forward.secuencia.push_back(actSON_FORWARD);
-					frontier.push_back(child_SON_forward);
-				}
-
-				// Generar hijo actSON_TURN_SL
-				nodeN1 child_SON_turnsl = current_node;
-				child_SON_turnsl.st = apply(actSON_TURN_SL, current_node.st, mapa);
-				if (explored.find(child_SON_turnsl) == explored.end()){
-					child_SON_turnsl.secuencia.push_back(actSON_TURN_SL);
-					frontier.push_back(child_SON_turnsl);
-				}
-
-				// Generar hijo actSON_TURN_SR
-				nodeN1 child_SON_turnsr = current_node;
-				child_SON_turnsr.st = apply(actSON_TURN_SR, current_node.st, mapa);
-				if (explored.find(child_SON_turnsr) == explored.end()){
-					child_SON_turnsr.secuencia.push_back(actSON_TURN_SR);
-					frontier.push_back(child_SON_turnsr);
-				}
-			//}
 		}
 
 		if (!SolutionFound && !frontier.empty()){
@@ -649,17 +481,8 @@ list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const v
 		plan = current_node.secuencia;
 	}
 
-	if (SolutionFound)
-		cout << "Solucion encontrada" << endl;
-	else
-		cout << "Solucion NO encontrada" << endl;
-
 	return plan;
 }
-
-
-/* ..................................Implementación nivel 2................................................ */
-
 
 /* ..................................Implementación nivel 3................................................ */
 

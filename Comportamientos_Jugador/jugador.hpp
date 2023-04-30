@@ -4,6 +4,7 @@
 #include "comportamientos/comportamiento.hpp"
 
 #include <list>
+#include <cmath>
 
 struct stateN0{
   ubicacion jugador;
@@ -29,23 +30,12 @@ struct nodeN0{
     if (st.jugador.f < n.st.jugador.f)
       return true;
     else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
-     return true;
+    return true;
     else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
       return true;
     else
       return false;
   }
-
-  /* bool operator< (const nodeN1 &n) const{
-    if (st.sonambulo.f < n.st.sonambulo.f)
-      return true;
-    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
-     return true;
-    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
-      return true;
-    else
-      return false;
-  } */
 };
 
 struct nodeN1{
@@ -57,24 +47,33 @@ struct nodeN1{
   }
 
   bool operator< (const nodeN1 &n) const{
-    if (st.sonambulo.f < n.st.sonambulo.f)
+    if (st.sonambulo.f+st.jugador.f < n.st.sonambulo.f+n.st.jugador.f)
       return true;
-    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
+    else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f && st.sonambulo.c+st.jugador.c < n.st.sonambulo.c+n.st.jugador.c)
      return true;
-    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+    else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f &&
+             st.sonambulo.c+st.jugador.c == n.st.sonambulo.c+n.st.jugador.c &&
+             (st.sonambulo.brujula+st.jugador.brujula) < (n.st.sonambulo.brujula+n.st.jugador.brujula))
       return true;
     else
       return false;
-   /*  if (st.jugador.f < n.st.jugador.f)
-      return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
-     return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
-      return true;
-    else
-      return false; */
   }
 };
+
+struct nodeN2{
+  stateN0 st;
+  list<Action> secuencia;
+  int coste;
+
+  bool operator== (const nodeN0 &n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodeN2 &n) const{
+    return (coste < n.coste);
+  }
+};
+
 
 class ComportamientoJugador : public Comportamiento {
   public:
