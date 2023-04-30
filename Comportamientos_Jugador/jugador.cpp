@@ -23,6 +23,7 @@ list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const v
 
 /* ..................................Declaración nivel 2................................................ */
 int coste (const stateN0 &st, const vector<vector<unsigned char> > &mapa);
+nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char> > &mapa);
 list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 /* ..................................Declaración nivel 3................................................ */
@@ -419,8 +420,133 @@ list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const v
 
 /* ..................................Implementación nivel 2................................................ */
 
-int coste (const stateN0 &st, const vector<vector<unsigned char> > &mapa){
+nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char> > &mapa){
+	nodeN2 n_result = n;
+	ubicacion sig_ubicacion;
+	switch (a){
+		case actFORWARD:
+			sig_ubicacion = NextCasilla(n.st.jugador);
+			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == n.st.sonambulo.f && sig_ubicacion.c == n.st.sonambulo.c)){
+				n_result.st.jugador = sig_ubicacion;
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K')
+					n_result.tiene_bikini = true;
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D')
+					n_result.tiene_zapatillas = true;
+			}
+			if (mapa[n.st.jugador.c][n.st.jugador.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 10;
+				else
+					n_result.coste += 100;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 15;
+				else
+					n_result.coste += 50;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'T')
+				n_result.coste += 2;
+			else
+				n_result.coste += 1;
+			break;
 
+		case actTURN_L:
+			n_result.st.jugador.brujula = static_cast<Orientacion>((n.st.jugador.brujula + 6) % 8);
+			if (mapa[n.st.jugador.c][n.st.jugador.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 5;
+				else
+					n_result.coste += 25;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 1;
+				else
+					n_result.coste += 5;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'T')
+				n_result.coste += 2;
+			else
+				n_result.coste += 1;
+			break;
+
+		case actTURN_R:
+			n_result.st.jugador.brujula = static_cast<Orientacion>((n.st.jugador.brujula + 2) % 8);
+			if (mapa[n.st.jugador.c][n.st.jugador.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 5;
+				else
+					n_result.coste += 25;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 1;
+				else
+					n_result.coste += 5;
+			else if (mapa[n.st.jugador.c][n.st.jugador.f] == 'T')
+				n_result.coste += 2;
+			else
+				n_result.coste += 1;
+			break;
+
+		case actSON_FORWARD:
+			sig_ubicacion = NextCasilla(n.st.sonambulo);
+			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == n.st.jugador.f && sig_ubicacion.c == n.st.jugador.c)){
+				n_result.st.sonambulo = sig_ubicacion;
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K')
+					n_result.tiene_bikini = true;
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D')
+					n_result.tiene_zapatillas = true;
+			}
+			if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 10;
+				else
+					n_result.coste += 100;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 15;
+				else
+					n_result.coste += 50;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'T')
+				n_result.coste += 2;
+			else
+				n_result.coste += 1;
+			break;
+
+		case actSON_TURN_SL:
+			n_result.st.sonambulo.brujula = static_cast<Orientacion>((n.st.sonambulo.brujula + 7) % 8);
+			if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 2;
+				else
+					n_result.coste += 7;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 1;
+				else
+					n_result.coste += 3;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'T')
+				n_result.coste += 1;
+			else
+				n_result.coste += 1;
+			break;
+
+		case actSON_TURN_SR:
+			n_result.st.sonambulo.brujula = static_cast<Orientacion>((n.st.sonambulo.brujula + 1) % 8);
+			if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'A')
+				if (n_result.tiene_bikini)
+					n_result.coste += 2;
+				else
+					n_result.coste += 7;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'B')
+				if (n_result.tiene_zapatillas)
+					n_result.coste += 1;
+				else
+					n_result.coste += 3;
+			else if (mapa[n.st.sonambulo.c][n.st.sonambulo.f] == 'T')
+				n_result.coste += 1;
+			else
+				n_result.coste += 1;
+			break;
+	}
+	return n_result;
 }
 
 list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
@@ -438,7 +564,7 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 
 		// Generar hijo actFORWARD
 		nodeN2 child_forward = current_node;
-		child_forward.st = apply(actFORWARD, current_node.st, mapa);
+		child_forward = apply(actFORWARD, current_node, mapa);
 		if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
 			child_forward.secuencia.push_back(actFORWARD);
 			current_node = child_forward;
@@ -452,7 +578,7 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 		if (!SolutionFound){
 			// Generar hijo actTURN_L
 			nodeN2 child_turnl = current_node;
-			child_turnl.st = apply(actTURN_L, current_node.st, mapa);
+			child_turnl = apply(actTURN_L, current_node, mapa);
 			if (explored.find(child_turnl) == explored.end()){
 				child_turnl.secuencia.push_back(actTURN_L);
 				frontier.push_back(child_turnl);
@@ -460,7 +586,7 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 
 			// Generar hijo actTURN_R
 			nodeN2 child_turnr = current_node;
-			child_turnr.st = apply(actTURN_R, current_node.st, mapa);
+			child_turnr = apply(actTURN_R, current_node, mapa);
 			if (explored.find(child_turnr) == explored.end()){
 				child_turnr.secuencia.push_back(actTURN_R);
 				frontier.push_back(child_turnr);

@@ -63,7 +63,8 @@ struct nodeN1{
 struct nodeN2{
   stateN0 st;
   list<Action> secuencia;
-  int coste;
+  int coste=0;
+  bool tiene_bikini = false, tiene_zapatillas = false;
 
   bool operator== (const nodeN0 &n) const{
     return (st == n.st);
@@ -90,7 +91,6 @@ class ComportamientoJugador : public Comportamiento {
     Action think(Sensores sensores);
     int interact(Action accion, int valor);
     void VisualizaPlan(const stateN0 &st, const list<Action> &plan);
-
 
   private:
     // Declarar Variables de Estado
