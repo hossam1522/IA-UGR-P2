@@ -9,6 +9,7 @@
 struct stateN0{
   ubicacion jugador;
   ubicacion sonambulo;
+  /* bool tiene_bikini, tiene_zapatillas; */
 
   bool operator== (const stateN0 &x) const{
     if (jugador == x.jugador && sonambulo.f == x.sonambulo.f && sonambulo.c == x.sonambulo.c)
@@ -61,17 +62,23 @@ struct nodeN1{
 };
 
 struct nodeN2{
-  stateN0 st;
-  list<Action> secuencia;
+  nodeN0 n;
   int coste=0;
   bool tiene_bikini = false, tiene_zapatillas = false;
 
-  bool operator== (const nodeN0 &n) const{
-    return (st == n.st);
+  bool operator== (const nodeN2 &x) const{
+    return (n.st == x.n.st && tiene_bikini == x.tiene_bikini && tiene_zapatillas == x.tiene_zapatillas);
   }
 
-  bool operator< (const nodeN2 &n) const{
-    return (coste < n.coste);
+  bool operator< (const nodeN2 &x) const{
+    if (n.st.jugador.f < x.n.st.jugador.f)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c < x.n.st.jugador.c)
+    return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula < x.n.st.jugador.brujula)
+      return true;
+    else
+      return false;
   }
 };
 
