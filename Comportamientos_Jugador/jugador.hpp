@@ -77,6 +77,12 @@ struct nodeN2{
     return true;
     else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula < x.n.st.jugador.brujula)
       return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula == x.n.st.jugador.brujula
+             && tiene_zapatillas < x.tiene_zapatillas)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula == x.n.st.jugador.brujula
+             && tiene_zapatillas == x.tiene_zapatillas && tiene_bikini < x.tiene_bikini)
+      return true;
     else
       return false;
   }

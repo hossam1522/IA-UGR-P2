@@ -55,14 +55,6 @@ Action ComportamientoJugador::think(Sensores sensores)
 			c_state.sonambulo.f = sensores.SONposF;
 			c_state.sonambulo.c = sensores.SONposC;
 			c_state.sonambulo.brujula = sensores.SONsentido;
-			/* if (sensores.terreno[0] == 'K')
-				c_state.tiene_bikini = true;
-			else	
-				c_state.tiene_bikini = false;
-			if (sensores.terreno[0] == 'D')
-				c_state.tiene_zapatillas = true;
-			else	
-				c_state.tiene_zapatillas = false; */
 			goal.f = sensores.destinoF;
 			goal.c = sensores.destinoC;
 
@@ -434,133 +426,6 @@ list<Action> AnchuraAmbos(const stateN0 &inicio, const ubicacion &final, const v
 /* ..................................Implementación nivel 2................................................ */
 
 nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char> > &mapa){
-	/* nodeN2 n_result = n;
-	ubicacion sig_ubicacion;
-	switch (a){
-		case actFORWARD:
-			sig_ubicacion = NextCasilla(n.n.st.jugador);
-			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == n.n.st.sonambulo.f && sig_ubicacion.c == n.n.st.sonambulo.c)){
-				n_result.n.st.jugador = sig_ubicacion;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K' && !n.n.st.tiene_bikini)
-					n_result.n.st.tiene_bikini = true;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D' && !n.n.st.tiene_zapatillas)
-					n_result.n.st.tiene_zapatillas = true;
-			}
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 10;
-				else
-					n_result.coste += 100;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 15;
-				else
-					n_result.coste += 50;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
-			break;
-
-		case actTURN_L:
-			n_result.n.st.jugador.brujula = static_cast<Orientacion>((n.n.st.jugador.brujula + 6) % 8);
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 5;
-				else
-					n_result.coste += 25;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 1;
-				else
-					n_result.coste += 5;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
-			break;
-
-		case actTURN_R:
-			n_result.n.st.jugador.brujula = static_cast<Orientacion>((n.n.st.jugador.brujula + 2) % 8);
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 5;
-				else
-					n_result.coste += 25;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 1;
-				else
-					n_result.coste += 5;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
-			break;
-
-		case actSON_FORWARD:
-			sig_ubicacion = NextCasilla(n.n.st.sonambulo);
-			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == n.n.st.jugador.f && sig_ubicacion.c == n.n.st.jugador.c)){
-				n_result.n.st.sonambulo = sig_ubicacion;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K')
-					n_result.n.st.tiene_bikini = true;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D')
-					n_result.n.st.tiene_zapatillas = true;
-			}
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 10;
-				else
-					n_result.coste += 100;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 15;
-				else
-					n_result.coste += 50;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
-			break;
-
-		case actSON_TURN_SL:
-			n_result.n.st.sonambulo.brujula = static_cast<Orientacion>((n.n.st.sonambulo.brujula + 7) % 8);
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 2;
-				else
-					n_result.coste += 7;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 1;
-				else
-					n_result.coste += 3;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
-				n_result.coste += 1;
-			else
-				n_result.coste += 1;
-			break;
-
-		case actSON_TURN_SR:
-			n_result.n.st.sonambulo.brujula = static_cast<Orientacion>((n.n.st.sonambulo.brujula + 1) % 8);
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.n.st.tiene_bikini)
-					n_result.coste += 2;
-				else
-					n_result.coste += 7;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.n.st.tiene_zapatillas)
-					n_result.coste += 1;
-				else
-					n_result.coste += 3;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
-				n_result.coste += 1;
-			else
-				n_result.coste += 1;
-			break;
-	}
-	return n_result; */
-
 	nodeN2 n_result = n;
 	ubicacion sig_ubicacion;
 	switch (a){
@@ -568,40 +433,46 @@ nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char
 			sig_ubicacion = NextCasilla(n.n.st.jugador);
 			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == n.n.st.sonambulo.f && sig_ubicacion.c == n.n.st.sonambulo.c)){
 				n_result.n.st.jugador = sig_ubicacion;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K' && !n.tiene_bikini)
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'K' && !n.tiene_bikini){
 					n_result.tiene_bikini = true;
-				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D' && !n.tiene_zapatillas)
+					n_result.tiene_zapatillas = false;
+				}
+				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D' && !n.tiene_zapatillas){
 					n_result.tiene_zapatillas = true;
+					n_result.tiene_bikini = false;
+				}
+				
+				if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'A')
+					if (n.tiene_bikini)
+						n_result.coste += 10;
+					else
+						n_result.coste += 100;
+				else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'B')
+					if (n.tiene_zapatillas)
+						n_result.coste += 15;
+					else
+						n_result.coste += 50;
+				else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'T')
+					n_result.coste += 2;
+				else
+					n_result.coste += 1;
 			}
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.tiene_bikini)
-					n_result.coste += 10;
-				else
-					n_result.coste += 100;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.tiene_zapatillas)
-					n_result.coste += 15;
-				else
-					n_result.coste += 50;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
+			
 			break;
 
 		case actTURN_L:
 			n_result.n.st.jugador.brujula = static_cast<Orientacion>((n.n.st.jugador.brujula + 6) % 8);
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.tiene_bikini)
+			if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'A')
+				if (n.tiene_bikini)
 					n_result.coste += 5;
 				else
 					n_result.coste += 25;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.tiene_zapatillas)
+			else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'B')
+				if (n.tiene_zapatillas)
 					n_result.coste += 1;
 				else
 					n_result.coste += 5;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
+			else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'T')
 				n_result.coste += 2;
 			else
 				n_result.coste += 1;
@@ -609,17 +480,17 @@ nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char
 
 		case actTURN_R:
 			n_result.n.st.jugador.brujula = static_cast<Orientacion>((n.n.st.jugador.brujula + 2) % 8);
-			if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'A')
-				if (n_result.tiene_bikini)
+			if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'A')
+				if (n.tiene_bikini)
 					n_result.coste += 5;
 				else
 					n_result.coste += 25;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'B')
-				if (n_result.tiene_zapatillas)
+			else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'B')
+				if (n.tiene_zapatillas)
 					n_result.coste += 1;
 				else
 					n_result.coste += 5;
-			else if (mapa[n_result.n.st.jugador.f][n_result.n.st.jugador.c] == 'T')
+			else if (mapa[n.n.st.jugador.f][n.n.st.jugador.c] == 'T')
 				n_result.coste += 2;
 			else
 				n_result.coste += 1;
@@ -633,36 +504,37 @@ nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char
 					n_result.tiene_bikini = true;
 				if (mapa[sig_ubicacion.f][sig_ubicacion.c] == 'D')
 					n_result.tiene_zapatillas = true;
+
+				if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'A')
+					if (n.tiene_bikini)
+						n_result.coste += 10;
+					else
+						n_result.coste += 100;
+				else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'B')
+					if (n.tiene_zapatillas)
+						n_result.coste += 15;
+					else
+						n_result.coste += 50;
+				else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'T')
+					n_result.coste += 2;
+				else
+					n_result.coste += 1;
 			}
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.tiene_bikini)
-					n_result.coste += 10;
-				else
-					n_result.coste += 100;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.tiene_zapatillas)
-					n_result.coste += 15;
-				else
-					n_result.coste += 50;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
-				n_result.coste += 2;
-			else
-				n_result.coste += 1;
 			break;
 
 		case actSON_TURN_SL:
 			n_result.n.st.sonambulo.brujula = static_cast<Orientacion>((n.n.st.sonambulo.brujula + 7) % 8);
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.tiene_bikini)
+			if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'A')
+				if (n.tiene_bikini)
 					n_result.coste += 2;
 				else
 					n_result.coste += 7;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.tiene_zapatillas)
+			else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'B')
+				if (n.tiene_zapatillas)
 					n_result.coste += 1;
 				else
 					n_result.coste += 3;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
+			else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'T')
 				n_result.coste += 1;
 			else
 				n_result.coste += 1;
@@ -670,17 +542,17 @@ nodeN2 apply(const Action &a, const nodeN2 &n, const vector<vector<unsigned char
 
 		case actSON_TURN_SR:
 			n_result.n.st.sonambulo.brujula = static_cast<Orientacion>((n.n.st.sonambulo.brujula + 1) % 8);
-			if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'A')
-				if (n_result.tiene_bikini)
+			if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'A')
+				if (n.tiene_bikini)
 					n_result.coste += 2;
 				else
 					n_result.coste += 7;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'B')
-				if (n_result.tiene_zapatillas)
+			else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'B')
+				if (n.tiene_zapatillas)
 					n_result.coste += 1;
 				else
 					n_result.coste += 3;
-			else if (mapa[n_result.n.st.sonambulo.f][n_result.n.st.sonambulo.c] == 'T')
+			else if (mapa[n.n.st.sonambulo.f][n.n.st.sonambulo.c] == 'T')
 				n_result.coste += 1;
 			else
 				n_result.coste += 1;
@@ -695,6 +567,14 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 	set<nodeN2> explored;
 	list<Action> plan;
 	current_node.n.st = inicio;
+	if (mapa[inicio.jugador.f][inicio.jugador.c] == 'K'){
+		current_node.tiene_bikini = true;
+		current_node.tiene_zapatillas = false;
+	}
+	else if (mapa[inicio.jugador.f][inicio.jugador.c] == 'D'){
+		current_node.tiene_zapatillas = true;
+		current_node.tiene_bikini = false;
+	}
 	bool SolutionFound = (current_node.n.st.jugador.f == final.f && current_node.n.st.jugador.c == final.c);
 	frontier.push(current_node);
 
@@ -702,41 +582,29 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 		frontier.pop();
 		explored.insert(current_node);
 
-		// Generar hijo actFORWARD
-		nodeN2 child_forward = current_node;
-		child_forward = apply(actFORWARD, current_node, mapa);
-		if (child_forward.n.st.jugador.f == final.f && child_forward.n.st.jugador.c == final.c){
-			child_forward.n.secuencia.push_back(actFORWARD);
-			current_node = child_forward;
+		if (current_node.n.st.jugador.f == final.f && current_node.n.st.jugador.c == final.c){
 			SolutionFound = true;
+			plan = current_node.n.secuencia;
 		}
-		else if (explored.find(child_forward) == explored.end()){
-			child_forward.n.secuencia.push_back(actFORWARD);
-			frontier.push(child_forward);
-		} /* else {
-			auto it = explored.find(child_forward);
-			if (it->n == child_forward.n && (it->tiene_bikini != child_forward.tiene_bikini or 
-			it->tiene_zapatillas != child_forward.tiene_zapatillas)){
+		
+
+		if (!SolutionFound){
+
+			// Generar hijo actFORWARD
+			nodeN2 child_forward = current_node;
+			child_forward = apply(actFORWARD, current_node, mapa);
+			if (explored.find(child_forward) == explored.end()){
 				child_forward.n.secuencia.push_back(actFORWARD);
 				frontier.push(child_forward);
 			}
-		} */
 
-		if (!SolutionFound){
 			// Generar hijo actTURN_L
 			nodeN2 child_turnl = current_node;
 			child_turnl = apply(actTURN_L, current_node, mapa);
 			if (explored.find(child_turnl) == explored.end()){
 				child_turnl.n.secuencia.push_back(actTURN_L);
 				frontier.push(child_turnl);
-			} /* else {
-				auto it = explored.find(child_turnl);
-				if (it->n == child_turnl.n && (it->tiene_bikini != child_turnl.tiene_bikini or
-				it->tiene_zapatillas != child_turnl.tiene_zapatillas)){
-					child_turnl.n.secuencia.push_back(actTURN_L);
-					frontier.push(child_turnl);
-				}
-			} */
+			}
 
 			// Generar hijo actTURN_R
 			nodeN2 child_turnr = current_node;
@@ -744,32 +612,18 @@ list<Action> DijkstraSoloJugador(const stateN0 &inicio, const ubicacion &final, 
 			if (explored.find(child_turnr) == explored.end()){
 				child_turnr.n.secuencia.push_back(actTURN_R);
 				frontier.push(child_turnr);
-			} /* else {
-				auto it = explored.find(child_turnr);
-				if (it->n == child_turnr.n && (it->tiene_bikini != child_turnr.tiene_bikini or
-				it->tiene_zapatillas != child_turnr.tiene_zapatillas)){
-					child_turnr.n.secuencia.push_back(actTURN_R);
-					frontier.push(child_turnr);
-				}
-			} */
+			}
 		}
 
 		if (!SolutionFound && !frontier.empty()){
 			current_node = frontier.top();
 			while (!frontier.empty() && explored.find(current_node) != explored.end()){
-				/* auto it = explored.find(current_node);
-				if (it->n == current_node.n && (it->tiene_bikini == current_node.tiene_bikini &&
-				it->tiene_zapatillas == current_node.tiene_zapatillas && it->coste <= current_node.coste)){ */
-					frontier.pop();
-					if (!frontier.empty())
-						current_node = frontier.top();
-				//}
+				frontier.pop();
+				if (!frontier.empty())
+					current_node = frontier.top();
+				
 			}
 		}
-	}
-
-	if (SolutionFound){
-		plan = current_node.n.secuencia;
 	}
 
 	return plan;
