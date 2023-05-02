@@ -9,7 +9,6 @@
 struct stateN0{
   ubicacion jugador;
   ubicacion sonambulo;
-  /* bool tiene_bikini, tiene_zapatillas; */
 
   bool operator== (const stateN0 &x) const{
     if (jugador == x.jugador && sonambulo.f == x.sonambulo.f && sonambulo.c == x.sonambulo.c)
@@ -88,6 +87,38 @@ struct nodeN2{
   }
 };
 
+struct nodeN3{
+  nodeN0 n;
+  int coste=0;
+  int heuristica=0;
+  bool tiene_bikini_J = false, tiene_zapatillas_J = false, tiene_bikini_SON = false, tiene_zapatillas_SON = false;
+
+  bool operator== (const nodeN3 &x) const{
+    return (n.st == x.n.st && tiene_bikini_J == x.tiene_bikini_J && tiene_zapatillas_J == x.tiene_zapatillas_J
+            && tiene_bikini_SON == x.tiene_bikini_SON && tiene_zapatillas_SON == x.tiene_zapatillas_SON);
+  }
+
+  bool operator< (const nodeN3 &x) const{
+    if (n.st.sonambulo.f+n.st.jugador.f < x.n.st.sonambulo.f+x.n.st.jugador.f)
+      return true;
+    else if (n.st.sonambulo.f+n.st.jugador.f == x.n.st.sonambulo.f+x.n.st.jugador.f && 
+            n.st.sonambulo.c+n.st.jugador.c < x.n.st.sonambulo.c+x.n.st.jugador.c)
+     return true;
+    else if (n.st.sonambulo.f+n.st.jugador.f == x.n.st.sonambulo.f+x.n.st.jugador.f &&
+             n.st.sonambulo.c+n.st.jugador.c == x.n.st.sonambulo.c+x.n.st.jugador.c &&
+             (n.st.sonambulo.brujula+n.st.jugador.brujula) < (x.n.st.sonambulo.brujula+x.n.st.jugador.brujula))
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula == x.n.st.jugador.brujula
+             && tiene_zapatillas_J+tiene_zapatillas_SON < x.tiene_zapatillas_J+x.tiene_zapatillas_SON)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c && n.st.jugador.brujula == x.n.st.jugador.brujula
+             && tiene_zapatillas_J+tiene_zapatillas_SON == x.tiene_zapatillas_J+x.tiene_zapatillas_SON &&
+             tiene_bikini_J+tiene_bikini_SON < x.tiene_bikini_J+x.tiene_bikini_SON)
+      return true;
+    else
+      return false;
+  }
+};
 
 class ComportamientoJugador : public Comportamiento {
   public:
