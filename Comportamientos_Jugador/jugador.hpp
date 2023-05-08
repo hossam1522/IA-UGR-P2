@@ -42,22 +42,127 @@ struct nodeN1{
   stateN0 st;
   list<Action> secuencia;
 
-  bool operator== (const nodeN0 &n) const{
+  bool operator== (const nodeN1 &n) const{
     return (st == n.st);
   }
 
-  bool operator< (const nodeN1 &n) const{
+  /* bool operator< (const nodeN1 &n) const{
     if (st.sonambulo.f+st.jugador.f < n.st.sonambulo.f+n.st.jugador.f)
       return true;
     else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f && st.sonambulo.c+st.jugador.c < n.st.sonambulo.c+n.st.jugador.c)
-     return true;
+      return true;
     else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f &&
              st.sonambulo.c+st.jugador.c == n.st.sonambulo.c+n.st.jugador.c &&
-             (st.sonambulo.brujula+st.jugador.brujula) < (n.st.sonambulo.brujula+n.st.jugador.brujula))
+             (st.sonambulo.brujula+st.jugador.brujula) <= (n.st.sonambulo.brujula+n.st.jugador.brujula))
+      return true;
+    else
+      return false;
+  } */
+
+  /* bool operator< (const nodeN1 &n) const{
+    if (st.sonambulo.f+st.jugador.f < n.st.sonambulo.f+n.st.jugador.f)
+      return true;
+    else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f && st.sonambulo.c+st.jugador.c < n.st.sonambulo.c+n.st.jugador.c)
+      return true;
+    else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f &&
+             st.sonambulo.c+st.jugador.c == n.st.sonambulo.c+n.st.jugador.c &&
+             (st.jugador.brujula) < (n.st.jugador.brujula))
+      return true;
+    else if (st.sonambulo.f+st.jugador.f == n.st.sonambulo.f+n.st.jugador.f &&
+             st.sonambulo.c+st.jugador.c == n.st.sonambulo.c+n.st.jugador.c &&
+             (st.jugador.brujula) == (n.st.jugador.brujula) &&
+             (st.sonambulo.brujula) < (n.st.sonambulo.brujula))
+      return true;
+    else
+      return false;
+  } */
+
+  bool operator< (const nodeN1 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.sonambulo.f == n.st.sonambulo.f &&
+             st.jugador.c < n.st.jugador.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.sonambulo.f == n.st.sonambulo.f &&
+             st.jugador.c == n.st.jugador.c && st.sonambulo.c < n.st.sonambulo.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.sonambulo.f == n.st.sonambulo.f &&
+             st.jugador.c == n.st.jugador.c && st.sonambulo.c == n.st.sonambulo.c &&
+             (st.jugador.brujula) < (n.st.jugador.brujula))
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.sonambulo.f == n.st.sonambulo.f &&
+             st.jugador.c == n.st.jugador.c && st.sonambulo.c == n.st.sonambulo.c &&
+             (st.jugador.brujula) == (n.st.jugador.brujula) &&
+             (st.sonambulo.brujula) < (n.st.sonambulo.brujula))
       return true;
     else
       return false;
   }
+
+/* bool operator< (const nodeN1 &n) const{
+  if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and
+             st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and
+             st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and
+             st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and
+             st.sonambulo.c < n.st.sonambulo.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and
+             st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and
+             st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+} */
+
+  /* bool operator< (const nodeN1 &n) const{
+    if (st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
+    return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c &&
+             st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+  } */
+
+  /* bool operator< (const nodeN1 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+    return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else
+      return false;
+  } */
+
+  /* bool operator< (const nodeN1 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+      return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c < n.st.sonambulo.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else if (st.sonambulo.f == n.st.sonambulo.f && st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+  } */
 };
 
 struct nodeN2{
@@ -101,7 +206,7 @@ struct nodeN3{
   bool operator< (const nodeN3 &x) const{
     if (n.st.sonambulo.f+n.st.jugador.f < x.n.st.sonambulo.f+x.n.st.jugador.f)
       return true;
-    else if (n.st.sonambulo.f+n.st.jugador.f == x.n.st.sonambulo.f+x.n.st.jugador.f && 
+    else if (n.st.sonambulo.f+n.st.jugador.f == x.n.st.sonambulo.f+x.n.st.jugador.f &&
             n.st.sonambulo.c+n.st.jugador.c < x.n.st.sonambulo.c+x.n.st.jugador.c)
      return true;
     else if (n.st.sonambulo.f+n.st.jugador.f == x.n.st.sonambulo.f+x.n.st.jugador.f &&
