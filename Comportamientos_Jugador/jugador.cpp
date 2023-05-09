@@ -39,6 +39,7 @@ struct ComparaCosteN3{
 	}
 };
 int distanciaManhattan(const ubicacion &a, const ubicacion &b);
+int aplicarHeurisitica (const nodeN3 &n, const ubicacion &final);
 list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 /* ..................................Declaración nivel 4................................................ */
@@ -593,6 +594,10 @@ int distanciaManhattan(const ubicacion &a, const ubicacion &b){
 	return abs(a.f - b.f) + abs(a.c - b.c);
 }
 
+int aplicarHeurisitica (const nodeN3 &n, const ubicacion &final){
+	return (/* distanciaManhattan(n.n.st.jugador, final) + */ distanciaManhattan (n.n.st.sonambulo, final)/2);
+}
+
 nodeN3 apply(const Action &a, const nodeN3 &n, const vector<vector<unsigned char> > &mapa){
 	nodeN3 n_result = n;
 	ubicacion sig_ubicacion;
@@ -755,7 +760,7 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 		current_node.tiene_zapatillas_SON = true;
 		current_node.tiene_bikini_SON = false;
 	}
-	current_node.heuristica = distanciaManhattan(current_node.n.st.jugador, final) + distanciaManhattan(current_node.n.st.sonambulo, final);
+	current_node.heuristica = aplicarHeurisitica(current_node, final);
 	bool SolutionFound = (current_node.n.st.sonambulo.f == final.f && current_node.n.st.sonambulo.c == final.c);
 	frontier.push(current_node);
 
@@ -763,46 +768,19 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 		frontier.pop();
 		explored.insert(current_node);
 
-		//Comprobar si es solucion cuando sale de abiertos
-
 		if (current_node.n.st.sonambulo.f == final.f && current_node.n.st.sonambulo.c == final.c){
 			SolutionFound = true;
 			plan = current_node.n.secuencia;
 		}
 
-
 		if (!SolutionFound){
-
-			/* // Generar hijo actFORWARD
-			nodeN3 child_forward = current_node;
-			child_forward = apply(actFORWARD, current_node, mapa);
-			if (explored.find(child_forward) == explored.end()){
-				child_forward.n.secuencia.push_back(actFORWARD);
-				frontier.push(child_forward);
-			}
-
-			// Generar hijo actTURN_L
-			nodeN3 child_turnl = current_node;
-			child_turnl = apply(actTURN_L, current_node, mapa);
-			if (explored.find(child_turnl) == explored.end()){
-				child_turnl.n.secuencia.push_back(actTURN_L);
-				frontier.push(child_turnl);
-			}
-
-			// Generar hijo actTURN_R
-			nodeN3 child_turnr = current_node;
-			child_turnr = apply(actTURN_R, current_node, mapa);
-			if (explored.find(child_turnr) == explored.end()){
-				child_turnr.n.secuencia.push_back(actTURN_R);
-				frontier.push(child_turnr);
-			} */
 
 			if (SON_aLaVista(current_node.n.st)){
 
 				// Generar hijo actSON_FORWARD
 				nodeN3 child_SON_forward = current_node;
 				child_SON_forward = apply(actSON_FORWARD, current_node, mapa);
-				child_SON_forward.heuristica = distanciaManhattan(child_SON_forward.n.st.jugador, final) + distanciaManhattan(child_SON_forward.n.st.sonambulo, final);
+				child_SON_forward.heuristica = aplicarHeurisitica(child_SON_forward, final);
 				if (explored.find(child_SON_forward) == explored.end()){
 					child_SON_forward.n.secuencia.push_back(actSON_FORWARD);
 					frontier.push(child_SON_forward);
@@ -811,7 +789,7 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 				// Generar hijo actSON_TURN_SL
 				nodeN3 child_SON_turnsl = current_node;
 				child_SON_turnsl = apply(actSON_TURN_SL, current_node, mapa);
-				child_SON_turnsl.heuristica = distanciaManhattan(child_SON_turnsl.n.st.jugador, final) + distanciaManhattan(child_SON_turnsl.n.st.sonambulo, final);
+				child_SON_turnsl.heuristica = aplicarHeurisitica(child_SON_turnsl, final);
 				if (explored.find(child_SON_turnsl) == explored.end() ){
 					child_SON_turnsl.n.secuencia.push_back(actSON_TURN_SL);
 					frontier.push(child_SON_turnsl);
@@ -820,7 +798,7 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 				// Generar hijo actSON_TURN_SR
 				nodeN3 child_SON_turnsr = current_node;
 				child_SON_turnsr = apply(actSON_TURN_SR, current_node, mapa);
-				child_SON_turnsr.heuristica = distanciaManhattan(child_SON_turnsr.n.st.jugador, final) + distanciaManhattan(child_SON_turnsr.n.st.sonambulo, final);
+				child_SON_turnsr.heuristica = aplicarHeurisitica(child_SON_turnsr, final);
 				if (explored.find(child_SON_turnsr) == explored.end() ){
 					child_SON_turnsr.n.secuencia.push_back(actSON_TURN_SR);
 					frontier.push(child_SON_turnsr);
@@ -831,13 +809,8 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 				// Generar hijo actFORWARD
 				nodeN3 child_forward = current_node;
 				child_forward = apply(actFORWARD, current_node, mapa);
-				child_forward.heuristica = distanciaManhattan(child_forward.n.st.jugador, final) + distanciaManhattan(child_forward.n.st.sonambulo, final);
-				if (SON_aLaVista(child_forward.n.st)){
-					child_forward.n.secuencia.push_back(actFORWARD);
-					frontier.push(child_forward);
-					//current_node = child_forward;
-				}
-				else if (explored.find(child_forward) == explored.end()){
+				child_forward.heuristica = aplicarHeurisitica(child_forward, final);
+				if (explored.find(child_forward) == explored.end()){
 					child_forward.n.secuencia.push_back(actFORWARD);
 					frontier.push(child_forward);
 				}
@@ -845,8 +818,8 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 				// Generar hijo actTURN_L
 				nodeN3 child_turnl = current_node;
 				child_turnl = apply(actTURN_L, current_node, mapa);
-				child_turnl.heuristica = distanciaManhattan(child_turnl.n.st.jugador, final) + distanciaManhattan(child_turnl.n.st.sonambulo, final);
-				if (explored.find(child_turnl) == explored.end() && !SON_aLaVista(current_node.n.st)){
+				child_turnl.heuristica = aplicarHeurisitica(child_turnl, final);
+				if (explored.find(child_turnl) == explored.end()){
 					child_turnl.n.secuencia.push_back(actTURN_L);
 					frontier.push(child_turnl);
 				}
@@ -854,8 +827,8 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 				// Generar hijo actTURN_R
 				nodeN3 child_turnr = current_node;
 				child_turnr = apply(actTURN_R, current_node, mapa);
-				child_turnr.heuristica = distanciaManhattan(child_turnr.n.st.jugador, final) + distanciaManhattan(child_turnr.n.st.sonambulo, final);
-				if (explored.find(child_turnr) == explored.end() && !SON_aLaVista(current_node.n.st) ){
+				child_turnr.heuristica = aplicarHeurisitica(child_turnr, final);
+				if (explored.find(child_turnr) == explored.end() ){
 					child_turnr.n.secuencia.push_back(actTURN_R);
 					frontier.push(child_turnr);
 				}
@@ -866,9 +839,19 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 		if (!SolutionFound && !frontier.empty()){
 			current_node = frontier.top();
 			while (!frontier.empty() && explored.find(current_node) != explored.end()){
-				frontier.pop();
-				if (!frontier.empty())
-					current_node = frontier.top();
+				int tmp = explored.find(current_node)->coste;
+				if (current_node.coste < tmp){
+					frontier.push(explored.find(current_node));
+					explored.erase(current_node);
+					frontier.pop();
+					if (!frontier.empty())
+						current_node = frontier.top();
+				}
+				else {
+					frontier.pop();
+					if (!frontier.empty())
+						current_node = frontier.top();
+				}
 
 			}
 		}
