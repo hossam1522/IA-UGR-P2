@@ -39,6 +39,7 @@ struct ComparaCosteN3{
 	}
 };
 int distanciaManhattan(const ubicacion &a, const ubicacion &b);
+int distanciaEuclidea(const ubicacion &a, const ubicacion &b);
 int aplicarHeurisitica (const nodeN3 &n, const ubicacion &final);
 list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
@@ -77,7 +78,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 					plan = DijkstraSoloJugador(c_state, goal, mapaResultado);
 					break;
 				case 3:
-					//plan = AEstrellaAmbos(c_state, goal, mapaResultado);
+					plan = AEstrellaAmbos(c_state, goal, mapaResultado);
 					break;
 			}
 			if (plan.size() > 0){
@@ -595,7 +596,12 @@ int distanciaManhattan(const ubicacion &a, const ubicacion &b){
 }
 
 int aplicarHeurisitica (const nodeN3 &n, const ubicacion &final){
-	return (/* distanciaManhattan(n.n.st.jugador, final) + */ distanciaManhattan (n.n.st.sonambulo, final)/2);
+	//return (/* distanciaEuclidea(n.n.st.jugador, final) +  */distanciaEuclidea(n.n.st.sonambulo, final));
+	return (distanciaEuclidea(n.n.st.jugador, final) + distanciaEuclidea(n.n.st.sonambulo, final));
+}
+
+int distanciaEuclidea(const ubicacion &a, const ubicacion &b){
+	return sqrt(pow(a.f - b.f, 2) + pow(a.c - b.c, 2));
 }
 
 nodeN3 apply(const Action &a, const nodeN3 &n, const vector<vector<unsigned char> > &mapa){
@@ -839,22 +845,27 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 		if (!SolutionFound && !frontier.empty()){
 			current_node = frontier.top();
 			while (!frontier.empty() && explored.find(current_node) != explored.end()){
-				int tmp = explored.find(current_node)->coste;
-				if (current_node.coste < tmp){
-					frontier.push(explored.find(current_node));
-					explored.erase(current_node);
+				/* auto it = explored.find(current_node);
+				cout << "El nodo a introducir en explored es " << current_node.n.st.jugador.f << " "
+						 <<	current_node.n.st.jugador.c << " y con coste " << current_node.coste << endl;
+				cout << "El nodo que se encuentra en explored es " << (*it).n.st.jugador.f << " "
+						 <<	(*it).n.st.jugador.c << " y con coste " << (*it).coste << endl;
+				if (current_node.coste < (*it).coste){
+					frontier.push(*it);
+					explored.erase(*it);
+				}
+				else { */
 					frontier.pop();
 					if (!frontier.empty())
 						current_node = frontier.top();
-				}
-				else {
-					frontier.pop();
-					if (!frontier.empty())
-						current_node = frontier.top();
-				}
+				// /}
 
 			}
 		}
+	}
+
+	if (!SolutionFound) {
+		cout << "No se ha encontrado solución" << endl;
 	}
 
 	return plan;

@@ -152,30 +152,37 @@ struct nodeN3{
       return true;
     else if (n.st.jugador.f == x.n.st.jugador.f && n.st.sonambulo.f == x.n.st.sonambulo.f &&
              n.st.jugador.c == x.n.st.jugador.c && n.st.sonambulo.c == x.n.st.sonambulo.c &&
-             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) && 
+             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) &&
              (n.st.sonambulo.brujula) == (x.n.st.sonambulo.brujula) &&
              tiene_zapatillas_J < x.tiene_bikini_J)
       return true;
     else if (n.st.jugador.f == x.n.st.jugador.f && n.st.sonambulo.f == x.n.st.sonambulo.f &&
              n.st.jugador.c == x.n.st.jugador.c && n.st.sonambulo.c == x.n.st.sonambulo.c &&
-             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) && 
+             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) &&
              (n.st.sonambulo.brujula) == (x.n.st.sonambulo.brujula) &&
              tiene_zapatillas_J == x.tiene_zapatillas_J && tiene_zapatillas_SON < x.tiene_zapatillas_SON)
       return true;
     else if (n.st.jugador.f == x.n.st.jugador.f && n.st.sonambulo.f == x.n.st.sonambulo.f &&
              n.st.jugador.c == x.n.st.jugador.c && n.st.sonambulo.c == x.n.st.sonambulo.c &&
-             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) && 
+             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) &&
              (n.st.sonambulo.brujula) == (x.n.st.sonambulo.brujula) &&
              tiene_zapatillas_J == x.tiene_zapatillas_J && tiene_zapatillas_SON == x.tiene_zapatillas_SON &&
              tiene_bikini_J < x.tiene_bikini_J)
       return true;
     else if (n.st.jugador.f == x.n.st.jugador.f && n.st.sonambulo.f == x.n.st.sonambulo.f &&
              n.st.jugador.c == x.n.st.jugador.c && n.st.sonambulo.c == x.n.st.sonambulo.c &&
-             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) && 
+             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) &&
              (n.st.sonambulo.brujula) == (x.n.st.sonambulo.brujula) &&
              tiene_zapatillas_J == x.tiene_zapatillas_J && tiene_zapatillas_SON == x.tiene_zapatillas_SON &&
              tiene_bikini_J == x.tiene_bikini_J && tiene_bikini_SON < x.tiene_bikini_SON)
       return true;
+    /* else if (n.st.jugador.f == x.n.st.jugador.f && n.st.sonambulo.f == x.n.st.sonambulo.f &&
+             n.st.jugador.c == x.n.st.jugador.c && n.st.sonambulo.c == x.n.st.sonambulo.c &&
+             (n.st.jugador.brujula) == (x.n.st.jugador.brujula) &&
+             (n.st.sonambulo.brujula) == (x.n.st.sonambulo.brujula) &&
+             tiene_zapatillas_J == x.tiene_zapatillas_J && tiene_zapatillas_SON == x.tiene_zapatillas_SON &&
+             tiene_bikini_J == x.tiene_bikini_J && tiene_bikini_SON == x.tiene_bikini_SON && coste < x.coste)
+      return true; */
     else
       return false;
   }
