@@ -108,7 +108,7 @@ struct nodeN3{
     return (n == x.n && tiene_bikini_J == x.tiene_bikini_J && tiene_zapatillas_J == x.tiene_zapatillas_J
             && tiene_bikini_SON == x.tiene_bikini_SON && tiene_zapatillas_SON == x.tiene_zapatillas_SON);
   }
-  
+
   bool operator< (const nodeN3 &x) const{
     if (n.st.jugador.f < x.n.st.jugador.f)
       return true;
@@ -164,6 +164,7 @@ class ComportamientoJugador : public Comportamiento {
     ComportamientoJugador(std::vector< std::vector< unsigned char> > mapaR) : Comportamiento(mapaR) {
       // Inicializar Variables de Estado
       hayPlan = false;
+      bien_situado = false;
     }
     ComportamientoJugador(const ComportamientoJugador & comport) : Comportamiento(comport){}
     ~ComportamientoJugador(){}
@@ -171,13 +172,16 @@ class ComportamientoJugador : public Comportamiento {
     Action think(Sensores sensores);
     int interact(Action accion, int valor);
     void VisualizaPlan(const stateN0 &st, const list<Action> &plan);
+    void actualizarVariablesEstado(Sensores sensores);
+    void rellenarMapa(Sensores sensores, vector< vector<unsigned char> > &matriz);
 
   private:
     // Declarar Variables de Estado
     list<Action> plan;
-    bool hayPlan;
+    bool hayPlan, bien_situado;
     stateN0 c_state;
     ubicacion goal;
+    Action last_action;
 
 
 };

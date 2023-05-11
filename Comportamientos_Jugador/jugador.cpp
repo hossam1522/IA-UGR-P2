@@ -99,7 +99,39 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 	}
 	else{
-		cout << "Nivel 4 no implementado" << endl;
+		if (!hayPlan){
+
+			// Invocar al método de búsqueda
+			cout << "Calculando un nuevo plan..." << endl;
+			goal.f = sensores.destinoF;
+			goal.c = sensores.destinoC;
+
+			if (!bien_situado){
+				plan.push_back(actWHEREIS);
+				bien_situado = true;
+			}
+			else {
+				rellenarMapa(sensores, mapaResultado);
+				plan = AEstrellaAmbos(c_state, goal, mapaResultado);
+			}
+
+			if (plan.size() > 0){
+				VisualizaPlan(c_state, plan);
+				hayPlan = true;
+			}
+		}
+		if (hayPlan and plan.size()>0){
+			cout << "Ejecutando la siguiente acción del plan" << endl;
+			accion = plan.front();
+			plan.pop_front();
+			actualizarVariablesEstado(sensores);
+			last_action = accion;
+		}
+		if (plan.size()== 0){
+			cout << "Se completó el plan" << endl;
+			hayPlan = false;
+		}
+
 	}
 
 	return accion;
@@ -867,6 +899,242 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 
 /* ..................................Implementación nivel 4................................................ */
 
+void ComportamientoJugador::actualizarVariablesEstado(Sensores sensores){
+	int a;
+	// Actualizacion de las variables de estado
+	switch (last_action){
+		case actFORWARD:
+			switch (c_state.jugador.brujula){
+				case norte: c_state.jugador.f--; break;
+				case noreste: c_state.jugador.f--; c_state.jugador.c++; break;
+				case este: c_state.jugador.c++; break;
+				case sureste: c_state.jugador.f++; c_state.jugador.c++; break;
+				case sur: c_state.jugador.f++; break;
+				case suroeste: c_state.jugador.f++; c_state.jugador.c--; break;
+				case oeste: c_state.jugador.c--; break;
+				case noroeste: c_state.jugador.f--; c_state.jugador.c--; break;
+			}
+			break;
+
+		case actTURN_SL:
+			a=c_state.jugador.brujula;
+			a=(a+7)%8;
+			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actTURN_SR:
+			a=c_state.jugador.brujula;
+			a=(a+1)%8;
+			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actTURN_L:
+			a=c_state.jugador.brujula;
+			a=(a+6)%8;
+			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actTURN_R:
+			a=c_state.jugador.brujula;
+			a=(a+2)%8;
+			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actSON_FORWARD:
+			switch (c_state.sonambulo.brujula){
+				case norte: c_state.sonambulo.f--; break;
+				case noreste: c_state.sonambulo.f--; c_state.sonambulo.c++; break;
+				case este: c_state.sonambulo.c++; break;
+				case sureste: c_state.sonambulo.f++; c_state.sonambulo.c++; break;
+				case sur: c_state.sonambulo.f++; break;
+				case suroeste: c_state.sonambulo.f++; c_state.sonambulo.c--; break;
+				case oeste: c_state.sonambulo.c--; break;
+				case noroeste: c_state.sonambulo.f--; c_state.sonambulo.c--; break;
+			}
+			break;
+
+		case actSON_TURN_SL:
+			a=c_state.sonambulo.brujula;
+			a=(a+7)%8;
+			c_state.sonambulo.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actSON_TURN_SR:
+			a=c_state.sonambulo.brujula;
+			a=(a+1)%8;
+			c_state.sonambulo.brujula=static_cast<Orientacion>(a);
+			break;
+
+		case actWHEREIS:
+			c_state.jugador.f=sensores.posF;
+			c_state.jugador.c=sensores.posC;
+			c_state.jugador.brujula=sensores.sentido;
+			c_state.sonambulo.f=sensores.SONposF;
+			c_state.sonambulo.c=sensores.SONposC;
+			c_state.sonambulo.brujula=sensores.SONsentido;
+			break;
+
+	}
+}
+
+void ComportamientoJugador::rellenarMapa(Sensores sensores, vector< vector<unsigned char> > &matriz){
+	// Aquí hay que rellenar el mapa con el terreno que hay delante
+	// de nuestro personaje.
+
+	switch(sensores.sentido){
+		case norte:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[1];
+			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[2];
+			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[3];
+			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[4];
+			matriz[sensores.posF-2][sensores.posC-1] = sensores.terreno[5];
+			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[6];
+			matriz[sensores.posF-2][sensores.posC+1] = sensores.terreno[7];
+			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[8];
+			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[9];
+			matriz[sensores.posF-3][sensores.posC-2] = sensores.terreno[10];
+			matriz[sensores.posF-3][sensores.posC-1] = sensores.terreno[11];
+			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[12];
+			matriz[sensores.posF-3][sensores.posC+1] = sensores.terreno[13];
+			matriz[sensores.posF-3][sensores.posC+2] = sensores.terreno[14];
+			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[15];
+			break;
+
+		case noreste:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[1];
+			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[2];
+			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[3];
+			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[4];
+			matriz[sensores.posF-2][sensores.posC+1] = sensores.terreno[5];
+			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[6];
+			matriz[sensores.posF-1][sensores.posC+2] = sensores.terreno[7];
+			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[8];
+			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[9];
+			matriz[sensores.posF-3][sensores.posC+1] = sensores.terreno[10];
+			matriz[sensores.posF-3][sensores.posC+2] = sensores.terreno[11];
+			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[12];
+			matriz[sensores.posF-2][sensores.posC+3] = sensores.terreno[13];
+			matriz[sensores.posF-1][sensores.posC+3] = sensores.terreno[14];
+			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[15];
+			break;
+
+		case este:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[1];
+			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[2];
+			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[3];
+			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[4];
+			matriz[sensores.posF-1][sensores.posC+2] = sensores.terreno[5];
+			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[6];
+			matriz[sensores.posF+1][sensores.posC+2] = sensores.terreno[7];
+			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[8];
+			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[9];
+			matriz[sensores.posF-2][sensores.posC+3] = sensores.terreno[10];
+			matriz[sensores.posF-1][sensores.posC+3] = sensores.terreno[11];
+			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[12];
+			matriz[sensores.posF+1][sensores.posC+3] = sensores.terreno[13];
+			matriz[sensores.posF+2][sensores.posC+3] = sensores.terreno[14];
+			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[15];
+			break;
+
+		case sureste:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[1];
+			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[2];
+			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[3];
+			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[4];
+			matriz[sensores.posF+1][sensores.posC+2] = sensores.terreno[5];
+			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[6];
+			matriz[sensores.posF+2][sensores.posC+1] = sensores.terreno[7];
+			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[8];
+			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[9];
+			matriz[sensores.posF+1][sensores.posC+3] = sensores.terreno[10];
+			matriz[sensores.posF+2][sensores.posC+3] = sensores.terreno[11];
+			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[12];
+			matriz[sensores.posF+3][sensores.posC+2] = sensores.terreno[13];
+			matriz[sensores.posF+3][sensores.posC+1] = sensores.terreno[14];
+			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[15];
+			break;
+
+		case sur:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[1];
+			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[2];
+			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[3];
+			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[4];
+			matriz[sensores.posF+2][sensores.posC+1] = sensores.terreno[5];
+			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[6];
+			matriz[sensores.posF+2][sensores.posC-1] = sensores.terreno[7];
+			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[8];
+			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[9];
+			matriz[sensores.posF+3][sensores.posC+2] = sensores.terreno[10];
+			matriz[sensores.posF+3][sensores.posC+1] = sensores.terreno[11];
+			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[12];
+			matriz[sensores.posF+3][sensores.posC-1] = sensores.terreno[13];
+			matriz[sensores.posF+3][sensores.posC-2] = sensores.terreno[14];
+			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[15];
+			break;
+
+		case suroeste:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[1];
+			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[2];
+			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[3];
+			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[4];
+			matriz[sensores.posF+2][sensores.posC-1] = sensores.terreno[5];
+			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[6];
+			matriz[sensores.posF+1][sensores.posC-2] = sensores.terreno[7];
+			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[8];
+			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[9];
+			matriz[sensores.posF+3][sensores.posC-1] = sensores.terreno[10];
+			matriz[sensores.posF+3][sensores.posC-2] = sensores.terreno[11];
+			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[12];
+			matriz[sensores.posF+2][sensores.posC-3] = sensores.terreno[13];
+			matriz[sensores.posF+1][sensores.posC-3] = sensores.terreno[14];
+			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[15];
+			break;
+
+		case oeste:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[1];
+			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[2];
+			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[3];
+			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[4];
+			matriz[sensores.posF+1][sensores.posC-2] = sensores.terreno[5];
+			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[6];
+			matriz[sensores.posF-1][sensores.posC-2] = sensores.terreno[7];
+			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[8];
+			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[9];
+			matriz[sensores.posF+2][sensores.posC-3] = sensores.terreno[10];
+			matriz[sensores.posF+1][sensores.posC-3] = sensores.terreno[11];
+			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[12];
+			matriz[sensores.posF-1][sensores.posC-3] = sensores.terreno[13];
+			matriz[sensores.posF-2][sensores.posC-3] = sensores.terreno[14];
+			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[15];
+			break;
+
+		case noroeste:
+			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
+			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[1];
+			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[2];
+			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[3];
+			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[4];
+			matriz[sensores.posF-1][sensores.posC-2] = sensores.terreno[5];
+			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[6];
+			matriz[sensores.posF-2][sensores.posC-1] = sensores.terreno[7];
+			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[8];
+			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[9];
+			matriz[sensores.posF-1][sensores.posC-3] = sensores.terreno[10];
+			matriz[sensores.posF-2][sensores.posC-3] = sensores.terreno[11];
+			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[12];
+			matriz[sensores.posF-3][sensores.posC-2] = sensores.terreno[13];
+			matriz[sensores.posF-3][sensores.posC-1] = sensores.terreno[14];
+			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[15];
+			break;
+	}
+}
 
 /* ..................................Implementación desde hpp.............................................. */
 
