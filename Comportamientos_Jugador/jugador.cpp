@@ -106,11 +106,22 @@ Action ComportamientoJugador::think(Sensores sensores)
 			goal.f = sensores.destinoF;
 			goal.c = sensores.destinoC;
 
+			if (sensores.reset){
+				bien_situado = false;
+			}
 			if (!bien_situado){
+				plan = list<Action>();
 				plan.push_back(actWHEREIS);
 				bien_situado = true;
 			}
 			else {
+				actualizarVariablesEstado(sensores);
+				sensores.posF = c_state.jugador.f;
+				sensores.posC = c_state.jugador.c;
+				sensores.sentido = c_state.jugador.brujula;
+				sensores.SONposF = c_state.sonambulo.f;
+				sensores.SONposC = c_state.sonambulo.c;
+				sensores.SONsentido = c_state.sonambulo.brujula;
 				rellenarMapa(sensores, mapaResultado);
 				plan = AEstrellaAmbos(c_state, goal, mapaResultado);
 			}
