@@ -156,6 +156,73 @@ struct nodeN3{
   }
 };
 
+struct stateN4{
+  ubicacion jugador;
+  ubicacion sonambulo;
+
+  bool operator== (const stateN4 &x) const{
+    if (jugador == x.jugador && sonambulo.f == x.sonambulo.f && sonambulo.c == x.sonambulo.c)
+      return true;
+    else
+      return false;
+  }
+};
+
+struct nodeN4{
+  stateN4 st;
+  list<Action> secuencia;
+
+  bool operator== (const nodeN4 &n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodeN4 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+    return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c && st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else
+      return false;
+  }
+};
+
+
+/* struct nodeN4{
+  stateN4 st;
+  list<Action> secuencia;
+
+  bool operator== (const nodeN4 &n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodeN4 &n) const{
+    if (st.jugador.f < n.st.jugador.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
+             st.jugador.brujula < n.st.jugador.brujula)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
+             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f < n.st.sonambulo.f)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
+             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f == n.st.sonambulo.f &&
+             st.sonambulo.c < n.st.sonambulo.c)
+      return true;
+    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
+             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f == n.st.sonambulo.f &&
+             st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+      return true;
+    else
+      return false;
+
+  }
+}; */
+
+
 class ComportamientoJugador : public Comportamiento {
   public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {
@@ -165,6 +232,7 @@ class ComportamientoJugador : public Comportamiento {
       // Inicializar Variables de Estado
       hayPlan = false;
       bien_situado = false;
+      ejecutadoWHEREIS = false;
     }
     ComportamientoJugador(const ComportamientoJugador & comport) : Comportamiento(comport){}
     ~ComportamientoJugador(){}
@@ -172,14 +240,17 @@ class ComportamientoJugador : public Comportamiento {
     Action think(Sensores sensores);
     int interact(Action accion, int valor);
     void VisualizaPlan(const stateN0 &st, const list<Action> &plan);
-    void actualizarVariablesEstado(Sensores sensores);
+    void VisualizaPlan(const stateN4 &st, const list<Action> &plan);
+    void actualizarVariablesEstado();
     void rellenarMapa(Sensores sensores, vector< vector<unsigned char> > &matriz);
+    bool loboCerca(Sensores sensores);
 
   private:
     // Declarar Variables de Estado
     list<Action> plan;
-    bool hayPlan, bien_situado;
+    bool hayPlan, bien_situado, ejecutadoWHEREIS;
     stateN0 c_state;
+    stateN4 c_state_N4;
     ubicacion goal;
     Action last_action;
 

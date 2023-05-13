@@ -14,8 +14,6 @@ list<Action> AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, c
 bool CasillaTransitable(const ubicacion &x, const vector<vector<unsigned char> > &mapa);
 ubicacion NextCasilla(const ubicacion &pos);
 stateN0 apply(const Action &a, const stateN0 &st, const vector<vector<unsigned char> > &mapa);
-bool Find(const stateN0 &item, const list<stateN0> &lista);
-bool Find(const stateN0 &item, const list<nodeN0> &lista);
 void AnularMatriz(vector<vector<unsigned char>> &matriz);
 
 /* ..................................Declaración nivel 1................................................ */
@@ -45,6 +43,10 @@ int aplicarHeurisitica (const nodeN3 &n, const ubicacion &final);
 list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 /* ..................................Declaración nivel 4................................................ */
+
+bool CasillaTransitableN4(const ubicacion &x, const vector<vector<unsigned char> > &mapa);
+stateN4 apply(const Action &a, const stateN4 &st, const vector<vector<unsigned char> > &mapa);
+list <Action> AnchuraSoloJugadorN4 (const stateN4 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa);
 
 
 
@@ -99,52 +101,76 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 	}
 	else{
-		if (!hayPlan){
 
-			// Invocar al método de búsqueda
-			cout << "Calculando un nuevo plan..." << endl;
-			goal.f = sensores.destinoF;
-			goal.c = sensores.destinoC;
+		if (sensores.reset){
+			bien_situado = false;
+			ejecutadoWHEREIS = false;
+		}
 
-			if (sensores.reset){
-				bien_situado = false;
-			}
-			if (!bien_situado){
+		if (!bien_situado){
+			accion = actWHEREIS;
+			bien_situado = true;
+
+		}
+		else {
+
+			if (!ejecutadoWHEREIS){
+				c_state_N4.jugador.f=sensores.posF;
+				c_state_N4.jugador.c=sensores.posC;
+				c_state_N4.jugador.brujula=sensores.sentido;
+				c_state_N4.sonambulo.f=sensores.SONposF;
+				c_state_N4.sonambulo.c=sensores.SONposC;
+				c_state_N4.sonambulo.brujula=sensores.SONsentido;
+				ejecutadoWHEREIS = true;
 				plan = list<Action>();
-				plan.push_back(actWHEREIS);
-				bien_situado = true;
-			}
-			else {
-				actualizarVariablesEstado(sensores);
-				sensores.posF = c_state.jugador.f;
-				sensores.posC = c_state.jugador.c;
-				sensores.sentido = c_state.jugador.brujula;
-				sensores.SONposF = c_state.sonambulo.f;
-				sensores.SONposC = c_state.sonambulo.c;
-				sensores.SONsentido = c_state.sonambulo.brujula;
-				rellenarMapa(sensores, mapaResultado);
-				plan = AEstrellaAmbos(c_state, goal, mapaResultado);
-			}
-
-			if (plan.size() > 0){
-				VisualizaPlan(c_state, plan);
+				plan.push_back(actFORWARD);
+				plan.push_back(actTURN_L);
+				plan.push_back(actFORWARD);
+				plan.push_back(actTURN_L);
+				plan.push_back(actFORWARD);
+				plan.push_back(actFORWARD);
 				hayPlan = true;
 			}
-		}
-		if (hayPlan and plan.size()>0){
-			cout << "Ejecutando la siguiente acción del plan" << endl;
-			accion = plan.front();
-			plan.pop_front();
-			actualizarVariablesEstado(sensores);
-			last_action = accion;
-		}
-		if (plan.size()== 0){
-			cout << "Se completó el plan" << endl;
-			hayPlan = false;
+			else{
+
+				actualizarVariablesEstado();
+				rellenarMapa(sensores, mapaResultado);
+
+				if (loboCerca(sensores)){
+					accion = actIDLE;
+				}
+				else if (!hayPlan){
+
+					// Invocar al método de búsqueda
+					cout << "Calculando un nuevo plan..." << endl;
+					goal.f = sensores.destinoF;
+					goal.c = sensores.destinoC;
+
+					plan = AnchuraSoloJugadorN4(c_state_N4, goal, mapaResultado);
+
+
+					if (plan.size() > 0){
+						VisualizaPlan(c_state_N4, plan);
+						hayPlan = true;
+					}
+				}
+				else if (hayPlan and plan.size()>0){
+					cout << "Ejecutando la siguiente acción del plan" << endl;
+					accion = plan.front();
+					plan.pop_front();
+				}
+				else if (plan.size()== 0){
+					cout << "Se completó el plan" << endl;
+					hayPlan = false;
+				}
+
+			}
+
 		}
 
 	}
 
+	last_action = accion;
 	return accion;
 }
 
@@ -217,7 +243,7 @@ list<Action> AnchuraSoloJugador(const stateN0 &inicio, const ubicacion &final, c
 }
 
 bool CasillaTransitable(const ubicacion &x, const vector<vector<unsigned char> > &mapa){
-	return (mapa[x.f][x.c] != 'P' && mapa[x.f][x.c] != 'M');
+	return (mapa[x.f][x.c] != 'P' && mapa[x.f][x.c] != 'M' /* && mapa[x.f][x.c]!='?' */);
 }
 
 ubicacion NextCasilla(const ubicacion &pos){
@@ -288,22 +314,6 @@ stateN0 apply(const Action &a, const stateN0 &st, const vector<vector<unsigned c
 			break;
 	}
 	return st_result;
-}
-
-bool Find(const stateN0 &item, const list<stateN0> &lista){
-	auto it = lista.begin();
-	while (it != lista.end() && !(*it == item))
-		it++;
-
-	return (!(it == lista.end()));
-}
-
-bool Find(const stateN0 &item, const list<nodeN0> &lista){
-	auto it = lista.begin();
-	while (it != lista.end() && !(it->st == item))
-		it++;
-
-	return (!(it == lista.end()));
 }
 
 void AnularMatriz(vector<vector<unsigned char>> &matriz){
@@ -910,79 +920,70 @@ list<Action> AEstrellaAmbos(const stateN0 &inicio, const ubicacion &final, const
 
 /* ..................................Implementación nivel 4................................................ */
 
-void ComportamientoJugador::actualizarVariablesEstado(Sensores sensores){
+void ComportamientoJugador::actualizarVariablesEstado(){
 	int a;
 	// Actualizacion de las variables de estado
 	switch (last_action){
 		case actFORWARD:
-			switch (c_state.jugador.brujula){
-				case norte: c_state.jugador.f--; break;
-				case noreste: c_state.jugador.f--; c_state.jugador.c++; break;
-				case este: c_state.jugador.c++; break;
-				case sureste: c_state.jugador.f++; c_state.jugador.c++; break;
-				case sur: c_state.jugador.f++; break;
-				case suroeste: c_state.jugador.f++; c_state.jugador.c--; break;
-				case oeste: c_state.jugador.c--; break;
-				case noroeste: c_state.jugador.f--; c_state.jugador.c--; break;
+			switch (c_state_N4.jugador.brujula){
+				case norte: c_state_N4.jugador.f--; break;
+				case noreste: c_state_N4.jugador.f--; c_state_N4.jugador.c++; break;
+				case este: c_state_N4.jugador.c++; break;
+				case sureste: c_state_N4.jugador.f++; c_state_N4.jugador.c++; break;
+				case sur: c_state_N4.jugador.f++; break;
+				case suroeste: c_state_N4.jugador.f++; c_state_N4.jugador.c--; break;
+				case oeste: c_state_N4.jugador.c--; break;
+				case noroeste: c_state_N4.jugador.f--; c_state_N4.jugador.c--; break;
 			}
 			break;
 
 		case actTURN_SL:
-			a=c_state.jugador.brujula;
+			a=c_state_N4.jugador.brujula;
 			a=(a+7)%8;
-			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			c_state_N4.jugador.brujula=static_cast<Orientacion>(a);
 			break;
 
 		case actTURN_SR:
-			a=c_state.jugador.brujula;
+			a=c_state_N4.jugador.brujula;
 			a=(a+1)%8;
-			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			c_state_N4.jugador.brujula=static_cast<Orientacion>(a);
 			break;
 
 		case actTURN_L:
-			a=c_state.jugador.brujula;
+			a=c_state_N4.jugador.brujula;
 			a=(a+6)%8;
-			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			c_state_N4.jugador.brujula=static_cast<Orientacion>(a);
 			break;
 
 		case actTURN_R:
-			a=c_state.jugador.brujula;
+			a=c_state_N4.jugador.brujula;
 			a=(a+2)%8;
-			c_state.jugador.brujula=static_cast<Orientacion>(a);
+			c_state_N4.jugador.brujula=static_cast<Orientacion>(a);
 			break;
 
 		case actSON_FORWARD:
-			switch (c_state.sonambulo.brujula){
-				case norte: c_state.sonambulo.f--; break;
-				case noreste: c_state.sonambulo.f--; c_state.sonambulo.c++; break;
-				case este: c_state.sonambulo.c++; break;
-				case sureste: c_state.sonambulo.f++; c_state.sonambulo.c++; break;
-				case sur: c_state.sonambulo.f++; break;
-				case suroeste: c_state.sonambulo.f++; c_state.sonambulo.c--; break;
-				case oeste: c_state.sonambulo.c--; break;
-				case noroeste: c_state.sonambulo.f--; c_state.sonambulo.c--; break;
+			switch (c_state_N4.sonambulo.brujula){
+				case norte: c_state_N4.sonambulo.f--; break;
+				case noreste: c_state_N4.sonambulo.f--; c_state_N4.sonambulo.c++; break;
+				case este: c_state_N4.sonambulo.c++; break;
+				case sureste: c_state_N4.sonambulo.f++; c_state_N4.sonambulo.c++; break;
+				case sur: c_state_N4.sonambulo.f++; break;
+				case suroeste: c_state_N4.sonambulo.f++; c_state_N4.sonambulo.c--; break;
+				case oeste: c_state_N4.sonambulo.c--; break;
+				case noroeste: c_state_N4.sonambulo.f--; c_state_N4.sonambulo.c--; break;
 			}
 			break;
 
 		case actSON_TURN_SL:
-			a=c_state.sonambulo.brujula;
+			a=c_state_N4.sonambulo.brujula;
 			a=(a+7)%8;
-			c_state.sonambulo.brujula=static_cast<Orientacion>(a);
+			c_state_N4.sonambulo.brujula=static_cast<Orientacion>(a);
 			break;
 
 		case actSON_TURN_SR:
-			a=c_state.sonambulo.brujula;
+			a=c_state_N4.sonambulo.brujula;
 			a=(a+1)%8;
-			c_state.sonambulo.brujula=static_cast<Orientacion>(a);
-			break;
-
-		case actWHEREIS:
-			c_state.jugador.f=sensores.posF;
-			c_state.jugador.c=sensores.posC;
-			c_state.jugador.brujula=sensores.sentido;
-			c_state.sonambulo.f=sensores.SONposF;
-			c_state.sonambulo.c=sensores.SONposC;
-			c_state.sonambulo.brujula=sensores.SONsentido;
+			c_state_N4.sonambulo.brujula=static_cast<Orientacion>(a);
 			break;
 
 	}
@@ -992,160 +993,267 @@ void ComportamientoJugador::rellenarMapa(Sensores sensores, vector< vector<unsig
 	// Aquí hay que rellenar el mapa con el terreno que hay delante
 	// de nuestro personaje.
 
-	switch(sensores.sentido){
+	switch(c_state_N4.jugador.brujula){
 		case norte:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[1];
-			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[2];
-			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[3];
-			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[4];
-			matriz[sensores.posF-2][sensores.posC-1] = sensores.terreno[5];
-			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[6];
-			matriz[sensores.posF-2][sensores.posC+1] = sensores.terreno[7];
-			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[8];
-			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[9];
-			matriz[sensores.posF-3][sensores.posC-2] = sensores.terreno[10];
-			matriz[sensores.posF-3][sensores.posC-1] = sensores.terreno[11];
-			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[12];
-			matriz[sensores.posF-3][sensores.posC+1] = sensores.terreno[13];
-			matriz[sensores.posF-3][sensores.posC+2] = sensores.terreno[14];
-			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-1] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+1] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-2] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-1] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+1] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+2] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+3] = sensores.terreno[15];
 			break;
 
 		case noreste:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[1];
-			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[2];
-			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[3];
-			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[4];
-			matriz[sensores.posF-2][sensores.posC+1] = sensores.terreno[5];
-			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[6];
-			matriz[sensores.posF-1][sensores.posC+2] = sensores.terreno[7];
-			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[8];
-			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[9];
-			matriz[sensores.posF-3][sensores.posC+1] = sensores.terreno[10];
-			matriz[sensores.posF-3][sensores.posC+2] = sensores.terreno[11];
-			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[12];
-			matriz[sensores.posF-2][sensores.posC+3] = sensores.terreno[13];
-			matriz[sensores.posF-1][sensores.posC+3] = sensores.terreno[14];
-			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+1] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+2] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+1] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+2] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+3] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+3] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+3] = sensores.terreno[15];
 			break;
 
 		case este:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF-1][sensores.posC+1] = sensores.terreno[1];
-			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[2];
-			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[3];
-			matriz[sensores.posF-2][sensores.posC+2] = sensores.terreno[4];
-			matriz[sensores.posF-1][sensores.posC+2] = sensores.terreno[5];
-			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[6];
-			matriz[sensores.posF+1][sensores.posC+2] = sensores.terreno[7];
-			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[8];
-			matriz[sensores.posF-3][sensores.posC+3] = sensores.terreno[9];
-			matriz[sensores.posF-2][sensores.posC+3] = sensores.terreno[10];
-			matriz[sensores.posF-1][sensores.posC+3] = sensores.terreno[11];
-			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[12];
-			matriz[sensores.posF+1][sensores.posC+3] = sensores.terreno[13];
-			matriz[sensores.posF+2][sensores.posC+3] = sensores.terreno[14];
-			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+2] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+2] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c+3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c+3] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c+3] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+3] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+3] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+3] = sensores.terreno[15];
 			break;
 
 		case sureste:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF][sensores.posC+1] = sensores.terreno[1];
-			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[2];
-			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[3];
-			matriz[sensores.posF][sensores.posC+2] = sensores.terreno[4];
-			matriz[sensores.posF+1][sensores.posC+2] = sensores.terreno[5];
-			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[6];
-			matriz[sensores.posF+2][sensores.posC+1] = sensores.terreno[7];
-			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[8];
-			matriz[sensores.posF][sensores.posC+3] = sensores.terreno[9];
-			matriz[sensores.posF+1][sensores.posC+3] = sensores.terreno[10];
-			matriz[sensores.posF+2][sensores.posC+3] = sensores.terreno[11];
-			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[12];
-			matriz[sensores.posF+3][sensores.posC+2] = sensores.terreno[13];
-			matriz[sensores.posF+3][sensores.posC+1] = sensores.terreno[14];
-			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+2] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+1] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c+3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+3] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+3] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+2] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+1] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c] = sensores.terreno[15];
 			break;
 
 		case sur:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF+1][sensores.posC+1] = sensores.terreno[1];
-			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[2];
-			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[3];
-			matriz[sensores.posF+2][sensores.posC+2] = sensores.terreno[4];
-			matriz[sensores.posF+2][sensores.posC+1] = sensores.terreno[5];
-			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[6];
-			matriz[sensores.posF+2][sensores.posC-1] = sensores.terreno[7];
-			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[8];
-			matriz[sensores.posF+3][sensores.posC+3] = sensores.terreno[9];
-			matriz[sensores.posF+3][sensores.posC+2] = sensores.terreno[10];
-			matriz[sensores.posF+3][sensores.posC+1] = sensores.terreno[11];
-			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[12];
-			matriz[sensores.posF+3][sensores.posC-1] = sensores.terreno[13];
-			matriz[sensores.posF+3][sensores.posC-2] = sensores.terreno[14];
-			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c+1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c+1] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-1] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+2] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c+1] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-1] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-2] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-3] = sensores.terreno[15];
 			break;
 
 		case suroeste:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF+1][sensores.posC] = sensores.terreno[1];
-			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[2];
-			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[3];
-			matriz[sensores.posF+2][sensores.posC] = sensores.terreno[4];
-			matriz[sensores.posF+2][sensores.posC-1] = sensores.terreno[5];
-			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[6];
-			matriz[sensores.posF+1][sensores.posC-2] = sensores.terreno[7];
-			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[8];
-			matriz[sensores.posF+3][sensores.posC] = sensores.terreno[9];
-			matriz[sensores.posF+3][sensores.posC-1] = sensores.terreno[10];
-			matriz[sensores.posF+3][sensores.posC-2] = sensores.terreno[11];
-			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[12];
-			matriz[sensores.posF+2][sensores.posC-3] = sensores.terreno[13];
-			matriz[sensores.posF+1][sensores.posC-3] = sensores.terreno[14];
-			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-1] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-2] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-1] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-2] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-3] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-3] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-3] = sensores.terreno[15];
 			break;
 
 		case oeste:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF+1][sensores.posC-1] = sensores.terreno[1];
-			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[2];
-			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[3];
-			matriz[sensores.posF+2][sensores.posC-2] = sensores.terreno[4];
-			matriz[sensores.posF+1][sensores.posC-2] = sensores.terreno[5];
-			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[6];
-			matriz[sensores.posF-1][sensores.posC-2] = sensores.terreno[7];
-			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[8];
-			matriz[sensores.posF+3][sensores.posC-3] = sensores.terreno[9];
-			matriz[sensores.posF+2][sensores.posC-3] = sensores.terreno[10];
-			matriz[sensores.posF+1][sensores.posC-3] = sensores.terreno[11];
-			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[12];
-			matriz[sensores.posF-1][sensores.posC-3] = sensores.terreno[13];
-			matriz[sensores.posF-2][sensores.posC-3] = sensores.terreno[14];
-			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-1] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-2] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-2] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-2] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f+3][c_state_N4.jugador.c-3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f+2][c_state_N4.jugador.c-3] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f+1][c_state_N4.jugador.c-3] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-3] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-3] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-3] = sensores.terreno[15];
 			break;
 
 		case noroeste:
-			matriz[sensores.posF][sensores.posC] = sensores.terreno[0];
-			matriz[sensores.posF][sensores.posC-1] = sensores.terreno[1];
-			matriz[sensores.posF-1][sensores.posC-1] = sensores.terreno[2];
-			matriz[sensores.posF-1][sensores.posC] = sensores.terreno[3];
-			matriz[sensores.posF][sensores.posC-2] = sensores.terreno[4];
-			matriz[sensores.posF-1][sensores.posC-2] = sensores.terreno[5];
-			matriz[sensores.posF-2][sensores.posC-2] = sensores.terreno[6];
-			matriz[sensores.posF-2][sensores.posC-1] = sensores.terreno[7];
-			matriz[sensores.posF-2][sensores.posC] = sensores.terreno[8];
-			matriz[sensores.posF][sensores.posC-3] = sensores.terreno[9];
-			matriz[sensores.posF-1][sensores.posC-3] = sensores.terreno[10];
-			matriz[sensores.posF-2][sensores.posC-3] = sensores.terreno[11];
-			matriz[sensores.posF-3][sensores.posC-3] = sensores.terreno[12];
-			matriz[sensores.posF-3][sensores.posC-2] = sensores.terreno[13];
-			matriz[sensores.posF-3][sensores.posC-1] = sensores.terreno[14];
-			matriz[sensores.posF-3][sensores.posC] = sensores.terreno[15];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c] = sensores.terreno[0];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-1] = sensores.terreno[1];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-1] = sensores.terreno[2];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c] = sensores.terreno[3];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-2] = sensores.terreno[4];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-2] = sensores.terreno[5];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-2] = sensores.terreno[6];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-1] = sensores.terreno[7];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c] = sensores.terreno[8];
+			matriz[c_state_N4.jugador.f][c_state_N4.jugador.c-3] = sensores.terreno[9];
+			matriz[c_state_N4.jugador.f-1][c_state_N4.jugador.c-3] = sensores.terreno[10];
+			matriz[c_state_N4.jugador.f-2][c_state_N4.jugador.c-3] = sensores.terreno[11];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-3] = sensores.terreno[12];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-2] = sensores.terreno[13];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c-1] = sensores.terreno[14];
+			matriz[c_state_N4.jugador.f-3][c_state_N4.jugador.c] = sensores.terreno[15];
 			break;
 	}
 }
+
+bool CasillaTransitableN4(const ubicacion &x, const vector<vector<unsigned char> > &mapa){
+	return ((mapa[x.f][x.c] != 'P' && mapa[x.f][x.c] != 'M'));
+}
+
+stateN4 apply(const Action &a, const stateN4 &st, const vector<vector<unsigned char> > &mapa){
+	stateN4 st_result = st;
+	ubicacion sig_ubicacion;
+	switch (a){
+		case actFORWARD:
+			sig_ubicacion = NextCasilla(st.jugador);
+			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.sonambulo.f && sig_ubicacion.c == st.sonambulo.c)){
+				st_result.jugador = sig_ubicacion;
+			}
+			break;
+		case actTURN_L:
+			st_result.jugador.brujula = static_cast<Orientacion>((st.jugador.brujula + 6) % 8);
+			break;
+		case actTURN_R:
+			st_result.jugador.brujula = static_cast<Orientacion>((st.jugador.brujula + 2) % 8);
+			break;
+		case actSON_FORWARD:
+			sig_ubicacion = NextCasilla(st.sonambulo);
+			if (CasillaTransitable(sig_ubicacion, mapa) && !(sig_ubicacion.f == st.jugador.f && sig_ubicacion.c == st.jugador.c)){
+				st_result.sonambulo = sig_ubicacion;
+			}
+			break;
+		case actSON_TURN_SL:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 7) % 8);
+			break;
+		case actSON_TURN_SR:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 1) % 8);
+			break;
+	}
+	return st_result;
+}
+
+list<Action> AnchuraSoloJugadorN4(const stateN4 &inicio, const ubicacion &final, const vector<vector<unsigned char> > &mapa){
+	nodeN4 current_node;
+	list<nodeN4> frontier;
+	set<nodeN4> explored;
+	list<Action> plan;
+	current_node.st = inicio;
+	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
+	frontier.push_back(current_node);
+
+	while (!frontier.empty() && !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+
+		// Generar hijo actFORWARD
+		nodeN4 child_forward = current_node;
+		child_forward.st = apply(actFORWARD, current_node.st, mapa);
+
+		if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
+			child_forward.secuencia.push_back(actFORWARD);
+			current_node = child_forward;
+			SolutionFound = true;
+		}
+		else if (explored.find(child_forward) == explored.end()){
+			child_forward.secuencia.push_back(actFORWARD);
+			frontier.push_back(child_forward);
+		}
+
+		if (!SolutionFound){
+			// Generar hijo actTURN_L
+			nodeN4 child_turnl = current_node;
+			child_turnl.st = apply(actTURN_L, current_node.st, mapa);
+			if (explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push_back(child_turnl);
+			}
+
+			// Generar hijo actTURN_R
+			nodeN4 child_turnr = current_node;
+			child_turnr.st = apply(actTURN_R, current_node.st, mapa);
+			if (explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actTURN_R);
+				frontier.push_back(child_turnr);
+			}
+		}
+
+		if (!SolutionFound && !frontier.empty()){
+			current_node = frontier.front();
+			while (!frontier.empty() && explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				if (!frontier.empty())
+					current_node = frontier.front();
+			}
+		}
+	}
+
+	if (SolutionFound){
+		plan = current_node.secuencia;
+	}
+
+	return plan;
+}
+
+bool ComportamientoJugador::loboCerca(Sensores sensores){
+	for (int i=1; i<sensores.superficie.size()-7; ++i)
+		if (sensores.superficie[i]=='l')
+			return true;
+
+	return false;
+}
+
 
 /* ..................................Implementación desde hpp.............................................. */
 
@@ -1181,4 +1289,35 @@ void ComportamientoJugador::VisualizaPlan(const stateN0 &st, const list<Action> 
 	}
 }
 
+void ComportamientoJugador::VisualizaPlan(const stateN4 &st, const list<Action> &plan){
+	AnularMatriz(mapaConPlan);
+	stateN4 cst = st;
+
+	auto it = plan.begin();
+	while (it != plan.end()){
+		switch (*it){
+			case actFORWARD:
+				cst.jugador = NextCasilla(cst.jugador);
+				mapaConPlan[cst.jugador.f][cst.jugador.c] = 1;
+				break;
+			case actTURN_R:
+				cst.jugador.brujula = (Orientacion)((cst.jugador.brujula + 2) % 8);
+				break;
+			case actTURN_L:
+				cst.jugador.brujula = (Orientacion)((cst.jugador.brujula + 6) % 8);
+				break;
+			case actSON_FORWARD:
+				cst.sonambulo = NextCasilla(cst.sonambulo);
+				mapaConPlan[cst.sonambulo.f][cst.sonambulo.c] = 2;
+				break;
+			case actSON_TURN_SR:
+				cst.sonambulo.brujula = (Orientacion)((cst.sonambulo.brujula + 1) % 8);
+				break;
+			case actSON_TURN_SL:
+				cst.sonambulo.brujula = (Orientacion)((cst.sonambulo.brujula + 7) % 8);
+				break;
+		}
+		it++;
+	}
+}
 
