@@ -234,13 +234,8 @@ class ComportamientoJugador : public Comportamiento {
       hayPlan = false;
       bien_situado = false;
       ejecutadoWHEREIS = false;
-      recargando = precipicios_rellenos = false;
-      girar_derecha = (rand()%2==0);
-      mapaVecesVisitado.resize(mapaResultado.size());
-      for (int i=0; i<mapaResultado.size(); i++)
-        mapaVecesVisitado[i].resize(mapaResultado[i].size(), 0);
 
-      
+
     }
     ComportamientoJugador(const ComportamientoJugador & comport) : Comportamiento(comport){}
     ~ComportamientoJugador(){}
@@ -253,24 +248,6 @@ class ComportamientoJugador : public Comportamiento {
     void rellenarMapa(Sensores sensores, vector< vector<unsigned char> > &matriz);
     bool loboCerca(Sensores sensores);
     bool puedoAvanzar(int num, Sensores sensores, stateN4 &st);
-    void elegirMovimiento(Action &accion, Sensores sensores, stateN4 &st);
-    bool hayPrecipicioDelante(Sensores sensores);
-    bool hayLimiteIzquierda(Sensores sensores);
-    bool hayLimiteDerecha(Sensores sensores);
-    bool hayHuecoIzquierda (Sensores sensores);
-    bool hayHuecoDerecha (Sensores sensores);
-    bool puedoCruzarDiagonalIZQSinZapatillas(Sensores sensores, stateN4 &st);
-    bool puedoCruzarDiagonalDCHASinZapatillas(Sensores sensores, stateN4 &st);
-    bool puedoCruzarDiagonalIZQSinBikini(Sensores sensores, stateN4 &st);
-    bool puedoCruzarDiagonalDCHASinBikini(Sensores sensores, stateN4 &st);
-    void rellenarPrecipicios(vector< vector<unsigned char> > &matriz);
-    bool bikiniCercaIZQ(Sensores, stateN4 &st);
-    bool bikiniCercaDCHA(Sensores sensores, stateN4 &st);
-    bool bikiniCercaFrente(Sensores sensores, stateN4 &st);
-    bool zapatillasCercaIZQ(Sensores sensores, stateN4 &st);
-    bool zapatillasCercaDCHA(Sensores sensores, stateN4 &st);
-    bool zapatillasCercaFrente(Sensores sensores, stateN4 &st);
-    int vecesVisitado(int num, Sensores sensores, stateN4 &st);
 
   private:
     // Declarar Variables de Estado
@@ -280,9 +257,6 @@ class ComportamientoJugador : public Comportamiento {
     stateN4 c_state_N4;
     ubicacion goal;
     Action last_action;
-    bool recargando, girar_derecha, precipicios_rellenos;
-    vector< vector<int> > mapaVecesVisitado;
-
 
 };
 
