@@ -159,7 +159,7 @@ struct nodeN3{
 struct stateN4{
   ubicacion jugador;
   ubicacion sonambulo;
-  bool tiene_bikini = false, tiene_zapatillas = false;
+  bool tiene_bikini_J = false, tiene_zapatillas_J = false, tiene_bikini_SON = false, tiene_zapatillas_SON = false;
 
   bool operator== (const stateN4 &x) const{
     if (jugador == x.jugador && sonambulo.f == x.sonambulo.f && sonambulo.c == x.sonambulo.c)
@@ -169,15 +169,15 @@ struct stateN4{
   }
 };
 
-struct nodeN4{
+struct nodeN04{
   stateN4 st;
   list<Action> secuencia;
 
-  bool operator== (const nodeN4 &n) const{
+  bool operator== (const nodeN04 &n) const{
     return (st == n.st);
   }
 
-  bool operator< (const nodeN4 &n) const{
+  bool operator< (const nodeN04 &n) const{
     if (st.jugador.f < n.st.jugador.f)
       return true;
     else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
@@ -189,39 +189,93 @@ struct nodeN4{
   }
 };
 
+struct nodeN24{
+  nodeN04 n;
+  int coste=0;
 
-/* struct nodeN4{
-  stateN4 st;
-  list<Action> secuencia;
-
-  bool operator== (const nodeN4 &n) const{
-    return (st == n.st);
+  bool operator== (const nodeN24 &x) const{
+    return (n.st == x.n.st && n.st.tiene_bikini_J == x.n.st.tiene_bikini_J &&
+            n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J);
   }
 
-  bool operator< (const nodeN4 &n) const{
-    if (st.jugador.f < n.st.jugador.f)
+  bool operator< (const nodeN24 &x) const{
+    if (n.st.jugador.f < x.n.st.jugador.f)
       return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c < n.st.jugador.c)
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c < x.n.st.jugador.c)
+    return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula < x.n.st.jugador.brujula)
       return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
-             st.jugador.brujula < n.st.jugador.brujula)
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula
+             && n.st.tiene_zapatillas_J < x.n.st.tiene_zapatillas_J)
       return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
-             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f < n.st.sonambulo.f)
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula
+             && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J && n.st.tiene_bikini_J < x.n.st.tiene_bikini_J)
       return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
-             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f == n.st.sonambulo.f &&
-             st.sonambulo.c < n.st.sonambulo.c)
+    else
+      return false;
+  }
+};
+
+struct nodeN34{
+  nodeN04 n;
+  int coste=0;
+  int heuristica=0;
+
+  bool operator== (const nodeN34 &x) const{
+    return (n == x.n && n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J
+            && n.st.tiene_bikini_SON == x.n.st.tiene_bikini_SON && n.st.tiene_zapatillas_SON == x.n.st.tiene_zapatillas_SON);
+  }
+
+  bool operator< (const nodeN34 &x) const{
+    if (n.st.jugador.f < x.n.st.jugador.f)
       return true;
-    else if (st.jugador.f == n.st.jugador.f && st.jugador.c == n.st.jugador.c &&
-             st.jugador.brujula == n.st.jugador.brujula && st.sonambulo.f == n.st.sonambulo.f &&
-             st.sonambulo.c == n.st.sonambulo.c && st.sonambulo.brujula < n.st.sonambulo.brujula)
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c < x.n.st.jugador.c)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula < x.n.st.jugador.brujula)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J < x.n.st.tiene_zapatillas_J)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J < x.n.st.tiene_bikini_J)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.sonambulo.f < x.n.st.sonambulo.f)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.sonambulo.f == x.n.st.sonambulo.f &&
+             n.st.sonambulo.c < x.n.st.sonambulo.c)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.sonambulo.f == x.n.st.sonambulo.f &&
+             n.st.sonambulo.c == x.n.st.sonambulo.c && n.st.sonambulo.brujula < x.n.st.sonambulo.brujula)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.sonambulo.f == x.n.st.sonambulo.f &&
+             n.st.sonambulo.c == x.n.st.sonambulo.c && n.st.sonambulo.brujula == x.n.st.sonambulo.brujula &&
+             n.st.tiene_zapatillas_SON < x.n.st.tiene_zapatillas_SON)
+      return true;
+    else if (n.st.jugador.f == x.n.st.jugador.f && n.st.jugador.c == x.n.st.jugador.c &&
+             n.st.jugador.brujula == x.n.st.jugador.brujula && n.st.tiene_zapatillas_J == x.n.st.tiene_zapatillas_J &&
+             n.st.tiene_bikini_J == x.n.st.tiene_bikini_J && n.st.sonambulo.f == x.n.st.sonambulo.f &&
+             n.st.sonambulo.c == x.n.st.sonambulo.c && n.st.sonambulo.brujula == x.n.st.sonambulo.brujula &&
+             n.st.tiene_zapatillas_SON == x.n.st.tiene_zapatillas_SON && n.st.tiene_bikini_SON < x.n.st.tiene_bikini_SON)
       return true;
     else
       return false;
 
   }
-}; */
+};
+
 
 
 class ComportamientoJugador : public Comportamiento {
@@ -234,6 +288,7 @@ class ComportamientoJugador : public Comportamiento {
       hayPlan = false;
       bien_situado = false;
       ejecutadoWHEREIS = false;
+      precipicios_rellenos = false;
 
 
     }
@@ -246,8 +301,10 @@ class ComportamientoJugador : public Comportamiento {
     void VisualizaPlan(const stateN4 &st, const list<Action> &plan);
     void actualizarVariablesEstado();
     void rellenarMapa(Sensores sensores, vector< vector<unsigned char> > &matriz);
-    bool loboCerca(Sensores sensores);
+    bool loboAldeanoCerca(Sensores sensores);
     bool puedoAvanzar(int num, Sensores sensores, stateN4 &st);
+    void rellenarPrecipicios(vector< vector<unsigned char> > &matriz);
+    bool muroPrecipicio(Sensores sensores);
 
   private:
     // Declarar Variables de Estado
@@ -257,6 +314,7 @@ class ComportamientoJugador : public Comportamiento {
     stateN4 c_state_N4;
     ubicacion goal;
     Action last_action;
+    bool precipicios_rellenos;
 
 };
 
