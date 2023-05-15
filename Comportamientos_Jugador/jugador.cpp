@@ -123,13 +123,13 @@ Action ComportamientoJugador::think(Sensores sensores)
 				c_state_N4.sonambulo.c=sensores.SONposC;
 				c_state_N4.sonambulo.brujula=sensores.SONsentido;
 				ejecutadoWHEREIS = true;
-				plan = list<Action>();
+				/* plan = list<Action>();
 				plan.push_back(actFORWARD);
 				plan.push_back(actTURN_L);
 				plan.push_back(actFORWARD);
 				plan.push_back(actTURN_L);
 				plan.push_back(actFORWARD);
-				plan.push_back(actFORWARD);
+				plan.push_back(actFORWARD); */
 				hayPlan = true;
 			}
 			else{
@@ -1191,7 +1191,8 @@ list<Action> AnchuraSoloJugadorN4(const stateN4 &inicio, const ubicacion &final,
 	set<nodeN4> explored;
 	list<Action> plan;
 	current_node.st = inicio;
-	bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
+	//bool SolutionFound = (current_node.st.jugador.f == final.f && current_node.st.jugador.c == final.c);
+	bool SolutionFound = (mapa[current_node.st.jugador.f][current_node.st.jugador.c] == '?');
 	frontier.push_back(current_node);
 
 	while (!frontier.empty() && !SolutionFound){
@@ -1202,7 +1203,8 @@ list<Action> AnchuraSoloJugadorN4(const stateN4 &inicio, const ubicacion &final,
 		nodeN4 child_forward = current_node;
 		child_forward.st = apply(actFORWARD, current_node.st, mapa);
 
-		if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
+		if (mapa[current_node.st.jugador.f][current_node.st.jugador.c] == '?'){
+		//if (child_forward.st.jugador.f == final.f && child_forward.st.jugador.c == final.c){
 			child_forward.secuencia.push_back(actFORWARD);
 			current_node = child_forward;
 			SolutionFound = true;
